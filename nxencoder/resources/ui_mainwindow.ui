@@ -427,7 +427,7 @@
     <property name="title">
      <string>Event Log</string>
     </property>
-    <widget class="QPlainTextEdit" name="plaintextedit_eventlog">
+    <widget class="QPlainTextEdit" name="pte_eventlog">
      <property name="geometry">
       <rect>
        <x>10</x>

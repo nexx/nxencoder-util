@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from PyQt5.QtCore import Qt, QState, QStateMachine, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
 from helpers.chart_volumetric import VolumetricChart
 from helpers.serial_encoder import SerialEncoder
@@ -40,7 +40,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.log_debug = False
 
+        self.actn_save.triggered.connect(self.log_save)
+
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
+        self.pushButton.clicked.connect(self.test_thread)
 
         self.init_gui()
         self.show()
@@ -109,7 +112,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def log_event(self, text, debug=False):
         ''' Log text to the GUI event log. '''
         if debug and not self.actn_verboselog.isChecked(): return
-        self.plaintextedit_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), text))
+        self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), text))
+
+    def log_save(self):
+        ''' Save the contents of the event log to a file chosen by QFileDialog. '''
+        log_filename, _ = QFileDialog.getSaveFileName(self, 'Save the Event Log as...', 'eventlog.txt', 'Text files (*.txt)' )
+        f = open(log_filename, 'w')
+        f.write(self.pte_eventlog.toPlainText())
+        f.close()
+        self.log_event('Log saved to {}'.format(log_filename))
 
     def populate_serial_ports(self):
         ''' Populate the encoder combobox with available system serial
