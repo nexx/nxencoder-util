@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""
+'''
 nxEncoder GUI
 
 Copyright (c) 2021 Simon Davie <nexx@nexxdesign.co.uk>
@@ -17,16 +17,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
 from PyQt5.QtCore import Qt, QState, QStateMachine, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
-from helpers.chart_volumetric import VolumetricChart
 from helpers.serial_encoder import SerialEncoder
-from helpers.util_workers import *
 from resources.ui_mainwindow import Ui_MainWindow
 
 import time
@@ -42,8 +40,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.actn_save.triggered.connect(self.log_save)
 
+        self.btn_encoder_connect.clicked.connect(self.encoder_connect)
+        self.btn_encoder_disconnect.clicked.connect(self.encoder_disconnect)
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
-        self.pushButton.clicked.connect(self.test_thread)
 
         self.init_gui()
         self.show()
@@ -130,7 +129,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # FIXME: This fixes a bug where no serial ports are available on launch
         # but self.sig_serial_disable.emit() never fires.
         QCoreApplication.processEvents()
-
         self.serial_ports = QSerialPortInfo.availablePorts()
         if not self.serial_ports:
             self.log_event('[SERIAL] No serial ports detected', True)
@@ -140,6 +138,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for port in self.serial_ports:
             self.log_event('[SERIAL] Found port: {} - {}'.format(port.portName(), port.description()), True)
             self.cbx_encoder_port.addItem('{}: {}'.format(port.portName(), port.description()))
+
+    def encoder_connect(self):
+        ''' Connect to the serial encoder via the serial_encoder class. '''
+        port = self.serial_ports[self.cbx_encoder_port.currentIndex()].portName()
+        self.log_event('Attempting connection to encoder on {}'.format(port))
+        self.encoder = SerialEncoder()
+        self.encoder.connect(port)
+        # FIXME: Add error checking here to check the serial connection succeeds.
+        self.log_event('Connected to encoder')
+        self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
+        self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
+
+    def encoder_disconnect(self):
+        ''' Disconnect from the serial encoder. '''
+        self.encoder.disconnect()
+        self.encoder = None
+        self.log_event('Closed connection to encoder')
 
 if __name__ == '__main__':
     app = QApplication([])
