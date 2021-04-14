@@ -32,20 +32,8 @@
       <x>10</x>
       <y>10</y>
       <width>401</width>
-      <height>161</height>
+      <height>141</height>
      </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>401</width>
-      <height>161</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>401</width>
-      <height>161</height>
-     </size>
     </property>
     <property name="font">
      <font>
@@ -62,12 +50,12 @@
        <x>10</x>
        <y>20</y>
        <width>381</width>
-       <height>131</height>
+       <height>121</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="layout_encoder">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_encoder_status">
+       <widget class="QLabel" name="lbl_encoder_status_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -83,7 +71,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="label_encoder_status_data">
+       <widget class="QLabel" name="lbl_encoder_status">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -99,7 +87,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_encoder_firmware">
+       <widget class="QLabel" name="lbl_encoder_fw_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -112,7 +100,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLabel" name="label_encoder_firmware_data">
+       <widget class="QLabel" name="lbl_encoder_fw">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -125,14 +113,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_encoder_port">
+       <widget class="QLabel" name="lbl_encoder_port_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -144,8 +125,8 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="combobox_encoder_port">
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbx_encoder_port">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -154,13 +135,13 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="3" column="1">
        <layout class="QHBoxLayout" name="layout_encoder_buttons">
         <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
-         <widget class="QPushButton" name="button_encoder_connect">
+         <widget class="QPushButton" name="btn_encoder_connect">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -173,7 +154,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="button_encoder_disconnect">
+         <widget class="QPushButton" name="btn_encoder_disconnect">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -198,7 +179,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="button_encoder_refreshports">
+         <widget class="QPushButton" name="btn_encoder_refresh">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -221,20 +202,8 @@
       <x>410</x>
       <y>10</y>
       <width>401</width>
-      <height>161</height>
+      <height>141</height>
      </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>401</width>
-      <height>161</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>401</width>
-      <height>161</height>
-     </size>
     </property>
     <property name="font">
      <font>
@@ -251,12 +220,12 @@
        <x>10</x>
        <y>20</y>
        <width>381</width>
-       <height>131</height>
+       <height>121</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="layout_printer">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_printer_status">
+       <widget class="QLabel" name="lbl_printer_status_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -272,7 +241,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="label_printer_status_data">
+       <widget class="QLabel" name="lbl_printer_status">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -288,7 +257,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_printer_firmware">
+       <widget class="QLabel" name="lbl_printer_fw_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -301,7 +270,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLabel" name="label_printer_firmware_data">
+       <widget class="QLabel" name="lbl_printer_fw">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -314,14 +283,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="Line" name="line_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_printer_firmwaretype">
+       <widget class="QLabel" name="lbl_printer_fwtype_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -333,8 +295,11 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="combobox_printer_firmwaretype">
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbx_printer_fwtype">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="font">
          <font>
           <weight>50</weight>
@@ -373,8 +338,8 @@
         </item>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_printer_hostname">
+      <item row="3" column="0">
+       <widget class="QLabel" name="lbl_printer_hostname_static">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -386,8 +351,8 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="lineedit_printer_hostname_data">
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="txt_printer_hostname">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -395,17 +360,17 @@
          </font>
         </property>
         <property name="text">
-         <string/>
+         <string>vcore3.local</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="4" column="1">
        <layout class="QHBoxLayout" name="layout_printer_buttons">
         <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
-         <widget class="QPushButton" name="button_printer_connect">
+         <widget class="QPushButton" name="btn_printer_connect">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -418,7 +383,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="button_printer_disconnect">
+         <widget class="QPushButton" name="btn_printer_disconnect">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -482,13 +447,13 @@
      </property>
     </widget>
    </widget>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="tabMain">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>170</y>
-      <width>791</width>
-      <height>501</height>
+      <x>10</x>
+      <y>160</y>
+      <width>811</width>
+      <height>511</height>
      </rect>
     </property>
     <property name="font">
@@ -504,16 +469,194 @@
      <attribute name="title">
       <string>Printer Details</string>
      </attribute>
+     <widget class="QGroupBox" name="groupbox_settings">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>801</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Settings</string>
+      </property>
+      <widget class="QWidget" name="formLayoutWidget_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>191</width>
+         <height>86</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="layout_vcal_options">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_vcal_tool">
+          <property name="text">
+           <string>Tool</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="settings_tool">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_vcal_nozzlesize">
+          <property name="text">
+           <string>Nozzle Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_vcal_temperature">
+          <property name="text">
+           <string>Temperature</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="settings_nozzle">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="currentText">
+           <string>0.2</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>0.2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.5</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.6</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.7</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.9</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1.0</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1.1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1.2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1.3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1.4</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="settings_temp">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QPushButton" name="pushButton">
+       <property name="geometry">
+        <rect>
+         <x>680</x>
+         <y>10</y>
+         <width>111</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Add data</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
       <string>Extruder steps/mm Calibration</string>
      </attribute>
     </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Extruder Consistency</string>
+     </attribute>
+    </widget>
     <widget class="QWidget" name="tab_3">
      <attribute name="title">
       <string>Volumetric Flow Calculation</string>
      </attribute>
+     <widget class="QChartView" name="vcal_chart_widget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>761</width>
+        <height>351</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -530,29 +673,56 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionExit"/>
+    <addaction name="actn_save"/>
+    <addaction name="actn_exit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbous"/>
+    <addaction name="actn_verboselog"/>
+    <addaction name="actn_about"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionAbous">
+  <action name="actn_about">
    <property name="text">
-    <string>Abous</string>
+    <string>About</string>
    </property>
   </action>
-  <action name="actionExit">
+  <action name="actn_exit">
    <property name="text">
     <string>Exit</string>
    </property>
   </action>
+  <action name="actn_save">
+   <property name="text">
+    <string>Save Log</string>
+   </property>
+  </action>
+  <action name="actionVerbose_Logging">
+   <property name="text">
+    <string>Verbose Logging</string>
+   </property>
+  </action>
+  <action name="actn_verboselog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Verbose Logging</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>PyQt5.QtChart</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
