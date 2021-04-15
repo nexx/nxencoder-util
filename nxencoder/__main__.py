@@ -33,6 +33,8 @@ import time
 class MainWindow(QMainWindow, Ui_MainWindow):
     sig_serial_disable = pyqtSignal()
     sig_serial_enable = pyqtSignal()
+    sig_encoder_connect = pyqtSignal()
+    sig_encoder_disconnect = pyqtSignal()
     sig_printer_connect = pyqtSignal()
     sig_printer_disconnect = pyqtSignal()
 
@@ -80,10 +82,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_serial_disabled.assignProperty(self.cbx_encoder_port, 'enabled', False)
         self.state_serial.setInitialState(self.state_serial_disconnected)
 
-        self.state_serial_disconnected.addTransition(self.btn_encoder_connect.clicked, self.state_serial_connected)
+        self.state_serial_disconnected.addTransition(self.sig_encoder_connect, self.state_serial_connected)
         self.state_serial_disconnected.addTransition(self.sig_serial_disable, self.state_serial_disabled)
         self.state_serial_disabled.addTransition(self.sig_serial_enable, self.state_serial_disconnected)
-        self.state_serial_connected.addTransition(self.btn_encoder_disconnect.clicked, self.state_serial_disconnected)
+        self.state_serial_connected.addTransition(self.sig_encoder_disconnect, self.state_serial_disconnected)
         self.state_serial.start()
 
         self.state_printer = QStateMachine()
@@ -149,8 +151,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         port = self.serial_ports[self.cbx_encoder_port.currentIndex()].portName()
         self.log_event('Attempting connection to encoder on {}'.format(port))
         self.encoder = SerialEncoder()
-        self.encoder.connect(port)
-        # FIXME: Add error checking here to check the serial connection succeeds.
+        if not self.encoder.connect(port):
+            self.log_event('Error connecting to the encoder')
+            self.log_event('[SERIAL] [ERROR] {}'.format(self.encoder.err), True)
+            self.encoder = None
+            return
+        self.sig_encoder_connect.emit()
         self.log_event('Connected to encoder')
         self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
         self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
@@ -160,6 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.encoder.disconnect()
         self.encoder = None
         self.log_event('Closed connection to encoder')
+        self.sig_encoder_disconnect.emit()
 
     def printer_connect(self):
         ''' Connect to the specified firmware '''
@@ -169,6 +176,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if not self.printer.connect():
                 self.log_event('Error connecting to printer')
                 self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
+                self.printer = None
                 return
             self.sig_printer_connect.emit()
             self.log_event('Connected to printer')

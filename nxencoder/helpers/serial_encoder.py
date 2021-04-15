@@ -44,9 +44,12 @@ class SerialEncoder:
         self.encoder.setFlowControl(QSerialPort.NoFlowControl)
         self.encoder.open(QSerialPort.ReadWrite)
         self.encoder.readyRead.connect(self.receive)
-        
-        sleep(2)
 
+        if not self.encoder.isOpen():
+            self.err = 'Connection to {} failed.'.format(portName)
+            return False
+
+        sleep(2)
         self.send('INFO')
         while len(self.line_buffer) == 0:
             QCoreApplication.processEvents()
@@ -55,6 +58,7 @@ class SerialEncoder:
         if handshake[:3] == 'NXE':
             _, self.firmware_version, self.firmware_date, self.interval, self.calibration = handshake.strip().split('|')
             self.interval = int(self.interval)
+        return True
 
     def receive(self):
         ''' Handle incoming data, add it to the line_buffer list '''
