@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import Qt, QState, QStateMachine, pyqtSignal, QCoreApplication
+from PyQt5.QtCore import Qt, QState, QStateMachine, QThreadPool, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
@@ -42,6 +42,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.log_debug = False
+        self.thread_pool = QThreadPool()
 
         self.actn_save.triggered.connect(self.log_save)
 
@@ -178,6 +179,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
                 self.printer = None
                 return
+
+            self.thread_pool.start(self.printer)
             self.sig_printer_connect.emit()
             self.log_event('Connected to printer')
             self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)

@@ -20,15 +20,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
+from PyQt5.QtCore import QRunnable, pyqtSlot
+from time import sleep
+
 import json
 import requests
-import time
 
-class DuetRRF3:
+class DuetRRF3(QRunnable):
     def __init__(self, address):
+        super(DuetRRF3, self).__init__()
         self.rrf_address = 'http://' + address
         self.cfg_tools = []
         self.cfg_board = []
+        self.run_thread = False
+
+    @pyqtSlot()
+    def run(self):
+        ''' Main thread used to retrieve the status of the printer.
+        Before looping the thread we load the printer configuration,
+        this way we don't pause the GUI on connect '''
+        self.read_configuration()
+        self.run_thread = True
+        while self.run_thread:
+            sensors = self.get_objectmodel('heat.heaters')
+            for tool, data in enumerate(self.cfg_tools):
+                self.cfg_tools[tool]['cur_temp'] = sensors[data['heater']]['current']
+            sleep(5)
 
     def connect(self):
         ''' Attempt to connect to the printer using /rr_config. This is
@@ -44,11 +61,11 @@ class DuetRRF3:
             'board': cfg_json['firmwareElectronics'],
             'firmware': cfg_json['firmwareVersion']
         })
-        self.read_configuration()
         return True
 
     def disconnect(self):
         ''' Clean up prior to clearing the class '''
+        self.run_thread = False
         return
 
     def read_configuration(self):
