@@ -24,6 +24,7 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
+from helpers.printer_reprapfirmware import DuetRRF3
 from helpers.serial_encoder import SerialEncoder
 from resources.ui_mainwindow import Ui_MainWindow
 
@@ -32,6 +33,8 @@ import time
 class MainWindow(QMainWindow, Ui_MainWindow):
     sig_serial_disable = pyqtSignal()
     sig_serial_enable = pyqtSignal()
+    sig_printer_connect = pyqtSignal()
+    sig_printer_disconnect = pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -43,6 +46,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_encoder_connect.clicked.connect(self.encoder_connect)
         self.btn_encoder_disconnect.clicked.connect(self.encoder_disconnect)
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
+        self.btn_printer_connect.clicked.connect(self.printer_connect)
+        self.btn_printer_disconnect.clicked.connect(self.printer_disconnect)
 
         self.init_gui()
         self.show()
@@ -98,8 +103,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.assignProperty(self.btn_printer_disconnect, 'enabled', True)
         self.state_printer.setInitialState(self.state_printer_disconnected)
 
-        self.state_printer_disconnected.addTransition(self.btn_printer_connect.clicked, self.state_printer_connected)
-        self.state_printer_connected.addTransition(self.btn_printer_disconnect.clicked, self.state_printer_disconnected)
+        self.state_printer_disconnected.addTransition(self.sig_printer_connect, self.state_printer_connected)
+        self.state_printer_connected.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer.start()
 
         self.populate_serial_ports()
@@ -155,6 +160,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.encoder.disconnect()
         self.encoder = None
         self.log_event('Closed connection to encoder')
+
+    def printer_connect(self):
+        ''' Connect to the specified firmware '''
+        self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
+        if self.cbx_printer_fwtype.currentIndex() == 0:            
+            self.printer = DuetRRF3(self.txt_printer_hostname.text())
+            if not self.printer.connect():
+                self.log_event('Error connecting to printer')
+                self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
+                return
+            self.sig_printer_connect.emit()
+            self.log_event('Connected to printer')
+            self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)
+            self.lbl_printer_fw.setText('v{} ({})'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']))
+
+    def printer_disconnect(self):
+        ''' Disconnect from the printer '''
+        self.printer.disconnect()
+        self.printer = None
+        self.log_event('Closed connection to printer')
+        self.sig_printer_disconnect.emit()
 
 if __name__ == '__main__':
     app = QApplication([])
