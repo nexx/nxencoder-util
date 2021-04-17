@@ -112,10 +112,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.populate_serial_ports()
 
-        self.vcal_chart = VolumetricChart()
-        self.vcal_chart_widget.setChart(self.vcal_chart.chart)
-        self.vcal_chart_widget.setRenderHint(QPainter.Antialiasing)
-
     def log_event(self, text, debug=False):
         ''' Log text to the GUI event log. '''
         if debug and not self.actn_verboselog.isChecked(): return
