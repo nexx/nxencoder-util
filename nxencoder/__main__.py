@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import Qt, QState, QStateMachine, QThreadPool, pyqtSignal, QCoreApplication
+from PyQt5.QtCore import Qt, QState, QStateMachine, QThread, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
@@ -42,7 +42,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.log_debug = False
-        self.thread_pool = QThreadPool()
+        self.thread_printer = QThread()
 
         self.actn_save.triggered.connect(self.log_save)
 
@@ -70,7 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_serial_disconnected.assignProperty(self.btn_encoder_refresh, 'enabled', True)
 
         self.state_serial_connecting = QState(self.state_serial)
-        self.state_serial_connecting.assignProperty(self.lbl_encoder_status, 'text', 'Connecting...')
+        self.state_serial_connecting.assignProperty(self.lbl_encoder_status, 'text', 'Connecting')
         self.state_serial_connecting.assignProperty(self.lbl_encoder_status, 'styleSheet', 'color: rgb(170, 170, 0)')
         self.state_serial_connecting.assignProperty(self.lbl_encoder_fw, 'text', 'N/A')
         self.state_serial_connecting.assignProperty(self.cbx_encoder_port, 'enabled', False)
@@ -109,6 +109,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_disconnected.assignProperty(self.btn_printer_connect, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_disconnect, 'enabled', False)
         
+        self.state_printer_connecting = QState(self.state_printer)
+        self.state_printer_connecting.assignProperty(self.lbl_printer_status, 'text', 'Connecting')
+        self.state_printer_connecting.assignProperty(self.lbl_printer_status, 'styleSheet', 'color: rgb(170, 170, 0)')
+        self.state_printer_connecting.assignProperty(self.lbl_printer_fw, 'text', 'N/A')
+        self.state_printer_connecting.assignProperty(self.txt_printer_hostname, 'enabled', False)
+        self.state_printer_connecting.assignProperty(self.btn_printer_connect, 'enabled', False)
+        self.state_printer_connecting.assignProperty(self.btn_printer_disconnect, 'enabled', False)
+
         self.state_printer_connected = QState(self.state_printer)
         self.state_printer_connected.assignProperty(self.lbl_printer_status, 'text', 'Connected')
         self.state_printer_connected.assignProperty(self.lbl_printer_status, 'styleSheet', 'color: rgb(0, 170, 0)')
@@ -117,9 +125,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.assignProperty(self.btn_printer_disconnect, 'enabled', True)
         self.state_printer.setInitialState(self.state_printer_disconnected)
 
-        self.state_printer_disconnected.addTransition(self.sig_printer_connect, self.state_printer_connected)
+        self.state_printer_disconnected.addTransition(self.sig_printer_connect, self.state_printer_connecting)
+        self.state_printer_connecting.addTransition(self.sig_printer_connect, self.state_printer_connected)
+        self.state_printer_connecting.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer_connected.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer.start()
+
+        self.t_count = 1
+        self.chart_const = ConsistencyChart()
+        self.chart_const_widget.setChart(self.chart_const.chart)
+        self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
 
         self.populate_serial_ports()
 
@@ -193,17 +208,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
         if self.cbx_printer_fwtype.currentIndex() == 0:            
             self.printer = DuetRRF3(self.txt_printer_hostname.text())
-            if not self.printer.connect():
-                self.log_event('Error connecting to printer')
-                self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
-                self.printer = None
-                return
 
-            self.thread_pool.start(self.printer)
-            self.sig_printer_connect.emit()
-            self.log_event('Connected to printer')
-            self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)
-            self.lbl_printer_fw.setText('v{} ({})'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']))
+        self.printer.moveToThread(self.thread_printer)
+        self.thread_printer.started.connect(self.printer.run)
+        self.printer.sig_finished.connect(self.thread_printer.quit)
+        self.printer.sig_connected.connect(self.printer_connected)
+        self.printer.sig_failure.connect(self.printer_failure)
+        self.printer.sig_data_update.connect(self.printer_update)
+        self.thread_printer.start()
+        self.sig_printer_connect.emit()
+
+    def printer_connected(self):
+        ''' The printer connection established sucessfully. '''
+        self.sig_printer_connect.emit()
+        self.log_event('Connected to printer')
+        self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)
+        self.lbl_printer_fw.setText('v{} ({})'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']))
+
+    def printer_failure(self):
+        ''' The printer connection failed. '''
+        self.printer.run_thread = False
+        self.thread_printer.quit()
+        self.log_event('Error connecting to printer')
+        self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
+        self.printer = None
+        self.sig_printer_disconnect.emit()
+
+    def printer_update(self):
+        ''' The printer has signalled that updated data is
+        available. '''
+        print('Update from printer')
 
     def printer_disconnect(self):
         ''' Disconnect from the printer '''

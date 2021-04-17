@@ -20,13 +20,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import QRunnable, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, QThread
 from time import sleep
 
 import json
 import requests
 
-class DuetRRF3(QRunnable):
+class DuetRRF3(QThread):
+    sig_connected = pyqtSignal()
+    sig_failure = pyqtSignal()
+    sig_data_update = pyqtSignal()
+    sig_finished = pyqtSignal()
+
     def __init__(self, address):
         super(DuetRRF3, self).__init__()
         self.rrf_address = 'http://' + address
@@ -34,51 +39,46 @@ class DuetRRF3(QRunnable):
         self.cfg_board = []
         self.run_thread = False
 
-    @pyqtSlot()
     def run(self):
-        ''' Main thread used to retrieve the status of the printer.
-        Before looping the thread we load the printer configuration,
-        this way we don't pause the GUI on connect '''
-        self.read_configuration()
+        ''' Main thread used for connection, thruough to retrieving
+        the status of the printer. Prior to entering the loop, connect,
+        and retrieve the configuration. This way we don't block the
+        GUI thread. '''
+        try:
+            cfg_json = json.loads(requests.get(self.rrf_address + '/rr_config').text)
+            self.cfg_board.append({
+                'board': cfg_json['firmwareElectronics'],
+                'firmware': cfg_json['firmwareVersion']
+            })
+
+            self.cfg_tools.clear()
+            for tool in self.get_objectmodel('tools'):
+                self.cfg_tools.append({
+                    'extruder': tool['extruders'][0],
+                    'heater': tool['heaters'][0],
+                    'stepsPerMm': self.get_objectmodel('move.extruders[{}].stepsPerMm'.format(tool['extruders'][0])),
+                    'cur_temp': 0
+                })
+        except Exception as e:
+            self.err = 'Connection to {} failed. Exception returned: {}'.format(self.rrf_address, e)
+            self.sig_failure.emit()
+            return
+
+        self.sig_connected.emit()
         self.run_thread = True
         while self.run_thread:
             sensors = self.get_objectmodel('heat.heaters')
             for tool, data in enumerate(self.cfg_tools):
                 self.cfg_tools[tool]['cur_temp'] = sensors[data['heater']]['current']
+            self.sig_data_update.emit()
             sleep(5)
 
-    def connect(self):
-        ''' Attempt to connect to the printer using /rr_config. This is
-        quicker than polling the object model, and returns useful data at
-        this stage. '''
-        try:
-            cfg_json = json.loads(requests.get(self.rrf_address + '/rr_config').text)
-        except Exception as e:
-            self.err = 'Connection to {} failed. Exception returned: {}'.format(self.rrf_address, e)
-            return False
-
-        self.cfg_board.append({
-            'board': cfg_json['firmwareElectronics'],
-            'firmware': cfg_json['firmwareVersion']
-        })
-        return True
+        self.sig_finished.emit()
 
     def disconnect(self):
         ''' Clean up prior to clearing the class '''
         self.run_thread = False
         return
-
-    def read_configuration(self):
-        ''' Read the object model, creating a list of active tools,
-        along with their associated extruders and heaters. '''
-        self.cfg_tools.clear()
-        for tool in self.get_objectmodel('tools'):
-            self.cfg_tools.append({
-                'extruder': tool['extruders'][0],
-                'heater': tool['heaters'][0],
-                'stepsPerMm': self.get_objectmodel('move.extruders[{}].stepsPerMm'.format(tool['extruders'][0])),
-                'cur_temp': 0
-            })
 
     def move_homeaxes(self):
         ''' Home all axes on the printer. '''
@@ -111,8 +111,6 @@ class DuetRRF3(QRunnable):
     def set_tool_temperature(self, temp, tool=0):
         ''' Begins heating the specified tool on the printer. '''
         self.send_gcode('M109 S{} T{}'.format(temp, tool))
-        while self.cfg_tools[tool]['cur_temp'] < temp:
-            time.sleep(1)
 
     def set_tool_esteps(self, esteps, tool=0):
         ''' Change the esteps of the extruder configured to the specified 
