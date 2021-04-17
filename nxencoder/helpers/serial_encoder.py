@@ -20,21 +20,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import QThread, pyqtSlot, pyqtSignal, QCoreApplication
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtSerialPort import QSerialPort
-from time import sleep
 
-class SerialEncoder:
+class SerialEncoder(QThread):
+    sig_measurement = pyqtSignal(float)
+    sig_handshake = pyqtSignal()
+
     def __init__(self):
-        self.line_buffer = []
-        self.running_measurement = False
+        super(SerialEncoder, self).__init__()
 
     def connect(self, portName):
-        ''' Connect to the encoder via the specified serial port. We
-        wait for 2 seconds after opening as the arduino resets when the
-        serial connection is established. A faster alternative would
-        be to utilize dsrdtr but this seems to cause further issues with
-        reading and writing '''
+        ''' Connect to the encoder via the specified serial port, check
+        the connection is open, and then return. Handling of the incoming
+        data is handled via Qt signals. '''
         self.encoder = QSerialPort()
         self.encoder.setPortName(portName)
         self.encoder.setBaudRate(QSerialPort.Baud9600)
@@ -48,51 +47,27 @@ class SerialEncoder:
         if not self.encoder.isOpen():
             self.err = 'Connection to {} failed.'.format(portName)
             return False
-
-        sleep(2)
-        self.send('INFO')
-        while len(self.line_buffer) == 0:
-            QCoreApplication.processEvents()
-
-        handshake = self.read_line_from_buffer()
-        if handshake[:3] == 'NXE':
-            _, self.firmware_version, self.firmware_date, self.interval, self.calibration = handshake.strip().split('|')
-            self.interval = int(self.interval)
         return True
 
     def receive(self):
-        ''' Handle incoming data, add it to the line_buffer list '''
+        ''' Handle incoming data '''
         while self.encoder.canReadLine():
             raw_data = self.encoder.readLine()
             data = raw_data.data().decode().rstrip('\r\n')
-            self.line_buffer.append(data)
 
-    def send(self, data):
-        ''' Send a command to the arduino '''
-        if not '\n' in data:
-           data = data + '\n'
-        self.encoder.write(data.encode())
-
-    def read_line_from_buffer(self):
-        ''' Read and return a single line from the buffer '''
-        if len(self.line_buffer) > 0:
-            return self.line_buffer.pop(0)
+            try:
+                float(data)
+                self.sig_measurement.emit(float(data))
+            except ValueError:
+                if data[:3] == 'NXE':
+                    _, self.firmware_version, self.firmware_date, self.interval, self.calibration = data.strip().split('|')
+                    self.interval = int(self.interval)
+                    self.sig_handshake.emit()
+                assert('Invalid data received from encoder. Raw: {}'.format(raw_data))
 
     def disconnect(self):
         ''' Disconnect from the serial port '''
         self.encoder.close()
-
-    def flush_buffer(self):
-        ''' Clear the line_buffer list '''
-        self.line_buffer.clear()
-
-    def get_measurement(self):
-        ''' Request a single measurement from the arduino '''
-        self.flush_buffer()
-        self.encoder.write('MEASURE\n'.encode())
-        while len(self.line_buffer) == 0:
-            QCoreApplication.processEvents()
-        return self.read_line_from_buffer()
 
     def set_absolute(self):
         ''' Make the arduino report absolute measurements '''
@@ -109,12 +84,10 @@ class SerialEncoder:
 
     def start(self):
         ''' Starts continuous reporting from the arduino '''
-        self.running_measurement = True
         self.encoder.write('START\n'.encode())
 
     def stop(self):
         ''' Stops the arduino reporting '''
-        self.running_measurement = False
         self.encoder.write('STOP\n'.encode())
 
     def reset(self):

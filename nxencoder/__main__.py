@@ -69,6 +69,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_serial_disconnected.assignProperty(self.btn_encoder_disconnect, 'enabled', False)
         self.state_serial_disconnected.assignProperty(self.btn_encoder_refresh, 'enabled', True)
 
+        self.state_serial_connecting = QState(self.state_serial)
+        self.state_serial_connecting.assignProperty(self.lbl_encoder_status, 'text', 'Connecting...')
+        self.state_serial_connecting.assignProperty(self.lbl_encoder_status, 'styleSheet', 'color: rgb(170, 170, 0)')
+        self.state_serial_connecting.assignProperty(self.lbl_encoder_fw, 'text', 'N/A')
+        self.state_serial_connecting.assignProperty(self.cbx_encoder_port, 'enabled', False)
+        self.state_serial_connecting.assignProperty(self.btn_encoder_connect, 'enabled', False)
+        self.state_serial_connecting.assignProperty(self.btn_encoder_disconnect, 'enabled', False)
+        self.state_serial_connecting.assignProperty(self.btn_encoder_refresh, 'enabled', False)
+
         self.state_serial_connected = QState(self.state_serial)
         self.state_serial_connected.assignProperty(self.lbl_encoder_status, 'text', 'Connected')
         self.state_serial_connected.assignProperty(self.lbl_encoder_status, 'styleSheet', 'color: rgb(0, 170, 0)')
@@ -83,7 +92,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_serial_disabled.assignProperty(self.cbx_encoder_port, 'enabled', False)
         self.state_serial.setInitialState(self.state_serial_disconnected)
 
-        self.state_serial_disconnected.addTransition(self.sig_encoder_connect, self.state_serial_connected)
+        self.state_serial_disconnected.addTransition(self.sig_encoder_connect, self.state_serial_connecting)
+        self.state_serial_connecting.addTransition(self.sig_encoder_connect, self.state_serial_connected)
+        self.state_serial_connecting.addTransition(self.sig_encoder_disconnect, self.state_serial_disconnected)
         self.state_serial_disconnected.addTransition(self.sig_serial_disable, self.state_serial_disabled)
         self.state_serial_disabled.addTransition(self.sig_serial_enable, self.state_serial_disconnected)
         self.state_serial_connected.addTransition(self.sig_encoder_disconnect, self.state_serial_disconnected)
@@ -148,15 +159,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         port = self.serial_ports[self.cbx_encoder_port.currentIndex()].portName()
         self.log_event('Attempting connection to encoder on {}'.format(port))
         self.encoder = SerialEncoder()
+        self.encoder.sig_handshake.connect(self.encoder_handshake)
+        self.encoder.sig_measurement.connect(self.encoder_measurement)
+        self.sig_encoder_connect.emit()
         if not self.encoder.connect(port):
             self.log_event('Error connecting to the encoder')
             self.log_event('[SERIAL] [ERROR] {}'.format(self.encoder.err), True)
             self.encoder = None
-            return
-        self.sig_encoder_connect.emit()
-        self.log_event('Connected to encoder')
-        self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
-        self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
+            self.sig_encoder_disconnect.emit()
 
     def encoder_disconnect(self):
         ''' Disconnect from the serial encoder. '''
@@ -164,6 +174,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.encoder = None
         self.log_event('Closed connection to encoder')
         self.sig_encoder_disconnect.emit()
+
+    def encoder_handshake(self):
+        ''' The encoder returned a handshake, process and update the
+        GUI with the details '''
+        self.sig_encoder_connect.emit()
+        self.log_event('Connected to encoder')
+        self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
+        self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
+
+    def encoder_measurement(self, measurement):
+        ''' The encoder returned a measurement, process and update
+        the GUI with the details '''
+        print(measurement)
 
     def printer_connect(self):
         ''' Connect to the specified firmware '''
