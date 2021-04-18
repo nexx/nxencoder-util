@@ -30,6 +30,7 @@ class DuetRRF3(QThread):
     sig_connected = pyqtSignal()
     sig_failure = pyqtSignal()
     sig_data_update = pyqtSignal()
+    sig_temp_reached = pyqtSignal(int)
     sig_finished = pyqtSignal()
 
     def __init__(self, address):
@@ -70,6 +71,8 @@ class DuetRRF3(QThread):
             sensors = self.get_objectmodel('heat.heaters')
             for tool, data in enumerate(self.cfg_tools):
                 self.cfg_tools[tool]['cur_temp'] = sensors[data['heater']]['current']
+                if sensors[data['heater']]['active'] != 0 and sensors[data['heater']]['active'] <= sensors[data['heater']]['current']:
+                    self.sig_temp_reached.emit(tool)
             self.sig_data_update.emit()
             sleep(5)
 
@@ -78,7 +81,13 @@ class DuetRRF3(QThread):
     def disconnect(self):
         ''' Clean up prior to clearing the class '''
         self.run_thread = False
+        for tool, _ in enumerate(self.cfg_tools):
+            self.set_tool_temperature(0, tool)
         return
+
+    def estop(self):
+        self.run_thread = False
+        self.send_gcode('M112')
 
     def move_homeaxes(self):
         ''' Home all axes on the printer. '''
@@ -95,9 +104,7 @@ class DuetRRF3(QThread):
 
     def send_gcode(self, gcode):
         ''' Transmit gcode to the printer via the HTTP interface. '''
-        r = requests.get(self.rrf_address + '/rr_gcode?', {'gcode': gcode})
-        if not r.status_code == 200:
-            r.raise_for_status()
+        requests.get(self.rrf_address + '/rr_gcode?', {'gcode': gcode})
     
     def get_objectmodel(self, key=''):
         ''' Read the object model, returning a json object containing
@@ -110,7 +117,7 @@ class DuetRRF3(QThread):
 
     def set_tool_temperature(self, temp, tool=0):
         ''' Begins heating the specified tool on the printer. '''
-        self.send_gcode('M109 S{} T{}'.format(temp, tool))
+        self.send_gcode('M104 S{} T{}'.format(temp, tool))
 
     def set_tool_esteps(self, esteps, tool=0):
         ''' Change the esteps of the extruder configured to the specified 
