@@ -24,6 +24,7 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
+from helpers.chart_consistency import ConsistencyChart
 from helpers.printer_reprapfirmware import DuetRRF3
 from helpers.serial_encoder import SerialEncoder
 from resources.ui_mainwindow import Ui_MainWindow
@@ -37,10 +38,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     sig_encoder_disconnect = pyqtSignal()
     sig_printer_connect = pyqtSignal()
     sig_printer_disconnect = pyqtSignal()
+    sig_chart_const_finished = pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        self.current_tool = 0
         self.log_debug = False
         self.thread_printer = QThread()
 
@@ -51,6 +54,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
         self.btn_printer_connect.clicked.connect(self.printer_connect)
         self.btn_printer_disconnect.clicked.connect(self.printer_disconnect)
+        self.cbx_tool.currentIndexChanged.connect(self.gui_tool_update)
+        self.btn_tool_home.clicked.connect(self.printer_move_home)
+        self.btn_tool_center.clicked.connect(self.printer_move_center)
+        self.btn_tool_heat.clicked.connect(self.printer_set_temperature)
+        self.btn_tool_run.clicked.connect(self.printer_run)
+        self.btn_estop.clicked.connect(self.printer_estop)
+        self.sig_chart_const_finished.connect(self.chart_const_finished)
 
         self.init_gui()
         self.show()
@@ -108,6 +118,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_disconnected.assignProperty(self.txt_printer_hostname, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_connect, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_disconnect, 'enabled', False)
+        self.state_printer_disconnected.assignProperty(self.tabMain, 'enabled', False)
+        self.state_printer_disconnected.assignProperty(self.cbx_tool, 'enabled', False)
         
         self.state_printer_connecting = QState(self.state_printer)
         self.state_printer_connecting.assignProperty(self.lbl_printer_status, 'text', 'Connecting')
@@ -123,6 +135,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.assignProperty(self.txt_printer_hostname, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_connect, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_disconnect, 'enabled', True)
+        self.state_printer_connected.assignProperty(self.tabMain, 'enabled', True)
+        self.state_printer_connected.assignProperty(self.cbx_tool, 'enabled', True)
         self.state_printer.setInitialState(self.state_printer_disconnected)
 
         self.state_printer_disconnected.addTransition(self.sig_printer_connect, self.state_printer_connecting)
@@ -201,7 +215,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def encoder_measurement(self, measurement):
         ''' The encoder returned a measurement, process and update
         the GUI with the details '''
-        print(measurement)
+        self.log_event('[SERIAL] Measurement received: {}'.format(measurement), True)
+        if self.tabMain.currentIndex() == 0:
+            return
+        if self.tabMain.currentIndex() == 1:
+            if measurement == 0 and self.chart_const.count != 1:
+                ''' Assume the measurement is complete. '''
+                self.encoder.stop()
+                self.sig_chart_const_finished.emit()
+                return
+            if measurement == 0 and self.chart_const.count == 1:
+                ''' Zero reading, extruder has not moved yet. '''
+                return
+
+            self.chart_const.add(measurement, self.encoder.interval)
+            return
+        if self.tabMain.currentIndex() == 2:
+            return
 
     def printer_connect(self):
         ''' Connect to the specified firmware '''
@@ -215,6 +245,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.printer.sig_connected.connect(self.printer_connected)
         self.printer.sig_failure.connect(self.printer_failure)
         self.printer.sig_data_update.connect(self.printer_update)
+        self.printer.sig_temp_reached.connect(self.printer_temp_reached)
         self.thread_printer.start()
         self.sig_printer_connect.emit()
 
@@ -223,7 +254,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sig_printer_connect.emit()
         self.log_event('Connected to printer')
         self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)
+        self.log_event('[RRF3-STD] Found {} tool(s)'.format(len(self.printer.cfg_tools)), True)
         self.lbl_printer_fw.setText('v{} ({})'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']))
+        self.cbx_tool.clear()
+        for tool, data in enumerate(self.printer.cfg_tools):
+            self.cbx_tool.addItem('Tool {}'.format(tool))
+        self.groupbox_settings.setEnabled(True)
 
     def printer_failure(self):
         ''' The printer connection failed. '''
@@ -233,18 +269,94 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
         self.printer = None
         self.sig_printer_disconnect.emit()
+        self.groupbox_settings.setEnabled(False)
 
     def printer_update(self):
         ''' The printer has signalled that updated data is
         available. '''
-        print('Update from printer')
+        if self.printer == None:
+            return
+        tool_data = self.printer.cfg_tools[self.current_tool]
+        self.txt_tool_curstep.setText('{}'.format(tool_data['stepsPerMm']))
+        self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
+        #print(tool_data)
 
     def printer_disconnect(self):
         ''' Disconnect from the printer '''
+        self.cbx_tool.clear()
         self.printer.disconnect()
         self.printer = None
         self.log_event('Closed connection to printer')
         self.sig_printer_disconnect.emit()
+        self.groupbox_settings.setEnabled(False)
+
+    def printer_temp_reached(self, tool):
+        ''' The printer has signalled the tool has hit the
+        requested temperature. '''
+        #FIXME: Do not enable btn_tool_run if a job is running
+        if tool != self.current_tool:
+            self.log_event('WARNING: Tool {} is at temperature, but it is not the active tool. Setting its temperature to 0C.'.format(tool))
+            self.printer.set_tool_temperature(0, tool)
+            return
+        self.btn_tool_heat.setEnabled(True)
+        self.btn_tool_run.setEnabled(True)
+
+    def printer_move_home(self):
+        ''' Attempt to home the printer '''
+        self.printer.move_homeaxes()
+        self.btn_tool_center.setEnabled(True)
+
+    def printer_move_center(self):
+        ''' Move current tool to middle of workspace. '''
+        self.printer.move_tomiddle(self.current_tool)
+        self.btn_tool_heat.setEnabled(True)
+
+    def printer_set_temperature(self):
+        ''' Set the current tool temperature. '''
+        self.btn_tool_heat.setEnabled(False)
+        self.btn_tool_run.setEnabled(False)
+        self.log_event('Heating Tool {} to {} C'.format(self.current_tool, self.dsbx_tool_temp.text()))
+        self.printer.set_tool_temperature(self.dsbx_tool_temp.text(), self.current_tool)
+
+    def gui_tool_update(self, index):
+        ''' Signalled when the tool combobox is altered. If we change
+        tool, we must update aspects of the GUI and make sure the previous
+        tool heater is disabled. '''
+        print('index: {} -- current_tool: {}'.format(index, self.current_tool))
+        if index != -1:
+            if self.current_tool != index:
+                self.printer.set_tool_temperature(0, self.current_tool)
+            self.current_tool = index
+
+    def printer_estop(self):
+        ''' Trigger an immediate emergency stop and then close all
+        printer connections. '''
+        self.log_event('**** EMERGENCY STOP TRIGGERED ****')
+        self.printer.estop()
+        self.printer_disconnect()
+
+    def printer_run(self):
+        ''' Triggered when the run button is pressed. We determine the
+        correct test to run based upon tabMain.currentIndex(). '''
+        #FIXME: Prevent user from changing tab during processing
+        if self.tabMain.currentIndex() == 0:
+            return
+        if self.tabMain.currentIndex() == 1:
+            ''' Extruder consistency'''
+            self.encoder.set_relative()
+            self.encoder.start()
+            self.chart_const.reset()
+            self.printer.send_gcode('G1 E122 F120')
+            self.btn_tool_run.setEnabled(False)
+            return
+        if self.tabMain.currentIndex() == 2:
+            return
+
+    def chart_const_finished(self):
+        ''' Signalled when the readings for the chart have completed. We
+        can now perform a report on the extruder consistency. '''
+        #TODO: Show results to user and also log to the event log
+        self.btn_tool_run.setEnabled(True)
 
 if __name__ == '__main__':
     app = QApplication([])
