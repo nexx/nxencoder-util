@@ -22,11 +22,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from PyQt5.QtCore import Qt, QState, QStateMachine, QThread, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
+from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow
 
 from helpers.chart_consistency import ConsistencyChart
 from helpers.printer_reprapfirmware import DuetRRF3
 from helpers.serial_encoder import SerialEncoder
+from helpers.worker_esteps import WorkerEsteps
 from resources.ui_mainwindow import Ui_MainWindow
 
 import time
@@ -44,23 +45,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.current_tool = 0
-        self.log_debug = False
         self.thread_printer = QThread()
+        self.thread_worker = QThread()
 
         self.actn_save.triggered.connect(self.log_save)
-
         self.btn_encoder_connect.clicked.connect(self.encoder_connect)
         self.btn_encoder_disconnect.clicked.connect(self.encoder_disconnect)
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
         self.btn_printer_connect.clicked.connect(self.printer_connect)
         self.btn_printer_disconnect.clicked.connect(self.printer_disconnect)
-        self.cbx_tool.currentIndexChanged.connect(self.gui_tool_update)
         self.btn_tool_home.clicked.connect(self.printer_move_home)
         self.btn_tool_center.clicked.connect(self.printer_move_center)
         self.btn_tool_heat.clicked.connect(self.printer_set_temperature)
         self.btn_tool_run.clicked.connect(self.printer_run)
         self.btn_estop.clicked.connect(self.printer_estop)
+        self.cbx_tool.currentIndexChanged.connect(self.gui_tool_update)
         self.sig_chart_const_finished.connect(self.chart_const_finished)
+        self.tabMain.currentChanged.connect(self.gui_tab_update)
 
         self.init_gui()
         self.show()
@@ -145,7 +146,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer.start()
 
-        self.t_count = 1
         self.chart_const = ConsistencyChart()
         self.chart_const_widget.setChart(self.chart_const.chart)
         self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_connect(self):
         ''' Connect to the specified firmware '''
         self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
-        if self.cbx_printer_fwtype.currentIndex() == 0:            
+        if self.cbx_printer_fwtype.currentIndex() == 0:
             self.printer = DuetRRF3(self.txt_printer_hostname.text())
 
         self.printer.moveToThread(self.thread_printer)
@@ -322,11 +322,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' Signalled when the tool combobox is altered. If we change
         tool, we must update aspects of the GUI and make sure the previous
         tool heater is disabled. '''
-        print('index: {} -- current_tool: {}'.format(index, self.current_tool))
         if index != -1:
+            self.log_event('Selecting tool {}'.format(index))
             if self.current_tool != index:
                 self.printer.set_tool_temperature(0, self.current_tool)
             self.current_tool = index
+
+    def gui_tab_update(self, index):
+        ''' Signalled when the user changes tab on the bottom of the
+        application. Use this to update the run button text to represent
+        what it will do. '''
+        if index == 0:
+            self.btn_tool_run.setText('Run Extruder Calibration')
+            return
+        if index == 1:
+            self.btn_tool_run.setText('Run Consistency Test')
+            return
+        if index == 2:
+            self.btn_tool_run.setText('Run Volumetric Calculation')
+            return
 
     def printer_estop(self):
         ''' Trigger an immediate emergency stop and then close all
@@ -338,25 +352,113 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_run(self):
         ''' Triggered when the run button is pressed. We determine the
         correct test to run based upon tabMain.currentIndex(). '''
-        #FIXME: Prevent user from changing tab during processing
         if self.tabMain.currentIndex() == 0:
+            self.tabMain.setTabEnabled(1, False)
+            self.tabMain.setTabEnabled(2, False)
+            self.btn_tool_run.setEnabled(False)
+            self.encoder.set_absolute()
+            self.printer_calibrate_esteps()
             return
         if self.tabMain.currentIndex() == 1:
-            ''' Extruder consistency'''
+            self.tabMain.setTabEnabled(0, False)
+            self.tabMain.setTabEnabled(2, False)
+            self.btn_tool_run.setEnabled(False)
             self.encoder.set_relative()
             self.encoder.start()
             self.chart_const.reset()
             self.printer.send_gcode('G1 E122 F120')
-            self.btn_tool_run.setEnabled(False)
             return
         if self.tabMain.currentIndex() == 2:
+            self.tabMain.setTabEnabled(0, False)
+            self.tabMain.setTabEnabled(1, False)
             return
+
+    def printer_calibrate_esteps(self):
+        ''' Run a calibration loop to calculate the extruder esteps.
+        If we have been passed a previous result, evaluate that. '''
+        for i in self.tab_esteps.findChildren(QLineEdit):
+            i.clear()
+
+        self.worker_esteps = WorkerEsteps()
+        self.worker_esteps.moveToThread(self.thread_worker)
+
+        self.worker_esteps.sig_encoder_measure.connect(self.encoder.measure)
+        self.worker_esteps.sig_encoder_reset.connect(self.encoder.reset)
+        self.worker_esteps.sig_printer_send_gcode.connect(self.printer.send_gcode)
+        self.worker_esteps.sig_event_log.connect(self.log_event)
+
+        self.worker_esteps.sig_result_ready.connect(self.esteps_data_ready)
+        self.thread_worker.started.connect(self.worker_esteps.run)
+        self.encoder.sig_measurement.connect(self.worker_esteps.handle_measurement)
+        self.thread_worker.start()
+
+    def esteps_data_ready(self):
+        ''' Signalled when the esteps calibration worker has
+        completed an iteration and the data is ready for the GUI. '''
+        current_tool_esteps = self.printer.cfg_tools[self.current_tool]['stepsPerMm']
+
+        results_num = len(self.worker_esteps.cal_results)
+        results_pct = round((results_num / 16) * 100)
+        self.progress_esteps.setValue(results_pct)
+
+        for i in range(len(self.worker_esteps.cal_results[0:8])):
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(i+1))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i]))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(i+1))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i] / 20) * 100))
+
+        distance_avg = sum(self.worker_esteps.cal_results[0:8]) / len(self.worker_esteps.cal_results[0:8])
+        distance_pct = distance_avg / 20
+        self.txt_esteps_coarse_avg.setText('{:.2f} mm'.format(distance_avg))
+        self.txt_esteps_coarse_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
+        self.txt_esteps_coarse_esteps.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+
+        if len(self.worker_esteps.cal_results) == 8:
+            self.log_event('Calculated coarse eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
+            current_tool_esteps = current_tool_esteps / distance_pct
+            self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
+
+        if len(self.worker_esteps.cal_results) < 9:
+            return
+
+        for i in range(len(self.worker_esteps.cal_results[8:17])):
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i+1))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i+8]))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i+1))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i+8] / 50) * 100))
+
+        distance_avg = sum(self.worker_esteps.cal_results[8:17]) / len((self.worker_esteps.cal_results[8:17]))
+        distance_pct = distance_avg / 50
+        self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
+        self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
+        self.txt_esteps_fine_esteps.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+
+        if len(self.worker_esteps.cal_results) == 16:
+            self.log_event('Calculated final eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
+            current_tool_esteps = current_tool_esteps / distance_pct
+            self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
+
+    def esteps_finished(self):
+        ''' Signalled when the esteps process has completed. We
+        can now perform a report on the extruder steps. '''
+        self.btn_tool_run.setEnabled(True)
+        self.tabMain.setTabEnabled(1, True)
+        self.tabMain.setTabEnabled(2, True)
 
     def chart_const_finished(self):
         ''' Signalled when the readings for the chart have completed. We
         can now perform a report on the extruder consistency. '''
         #TODO: Show results to user and also log to the event log
         self.btn_tool_run.setEnabled(True)
+        self.tabMain.setTabEnabled(0, True)
+        self.tabMain.setTabEnabled(2, True)
+    
+    def chart_vol_finished(self):
+        ''' Signalled when the readings for the chart have completed. We
+        can now perform a report on the maximum volumetric throughput. '''
+        self.btn_tool_run.setEnabled(True)
+        self.tabMain.setTabEnabled(0, True)
+        self.tabMain.setTabEnabled(1, True)
 
 if __name__ == '__main__':
     app = QApplication([])
