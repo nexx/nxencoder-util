@@ -20,15 +20,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtSerialPort import QSerialPort
 
-class SerialEncoder(QThread):
+class SerialEncoder(QObject):
     sig_measurement = pyqtSignal(float)
     sig_handshake = pyqtSignal()
 
-    def __init__(self):
-        super(SerialEncoder, self).__init__()
+    def __init__(self, parent=None):
+        super(SerialEncoder, self).__init__(parent)
 
     def connect(self, portName):
         ''' Connect to the encoder via the specified serial port, check
@@ -54,7 +54,6 @@ class SerialEncoder(QThread):
         while self.encoder.canReadLine():
             raw_data = self.encoder.readLine()
             data = raw_data.data().decode().rstrip('\r\n')
-
             try:
                 float(data)
                 self.sig_measurement.emit(float(data))
@@ -67,7 +66,12 @@ class SerialEncoder(QThread):
 
     def disconnect(self):
         ''' Disconnect from the serial port '''
+        self.encoder.stop()
         self.encoder.close()
+
+    def measure(self):
+        ''' Make the arduino report a measurement now. '''
+        self.encoder.write('MEASURE\n'.encode())
 
     def set_absolute(self):
         ''' Make the arduino report absolute measurements '''
