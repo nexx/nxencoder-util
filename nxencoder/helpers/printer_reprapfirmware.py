@@ -20,22 +20,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import pyqtSignal, QThread
-from time import sleep
+from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject, QTimer
 
 import json
 import requests
+import socket
 
-class DuetRRF3(QThread):
+class DuetRRF3(QObject):
     sig_connected = pyqtSignal()
     sig_failure = pyqtSignal()
     sig_data_update = pyqtSignal()
     sig_temp_reached = pyqtSignal(int)
     sig_finished = pyqtSignal()
 
-    def __init__(self, address):
-        super(DuetRRF3, self).__init__()
-        self.rrf_address = 'http://' + address
+    def __init__(self, host, parent=None):
+        super(DuetRRF3, self).__init__(parent)
+        self.rrf_host = host
+        self.idle = False
+        self.homed = False
         self.cfg_tools = []
         self.cfg_board = []
         self.run_thread = False
@@ -44,8 +46,14 @@ class DuetRRF3(QThread):
         ''' Main thread used for connection, thruough to retrieving
         the status of the printer. Prior to entering the loop, connect,
         and retrieve the configuration. This way we don't block the
-        GUI thread. '''
+        GUI thread. Lastly, we resolve the provided hostname to an IP
+        address so that each use of requests does not trigger a delay
+        due to DNS lookups. '''
+        self.loop = QEventLoop()
+
         try:
+            self.rrf_address = 'http://' + socket.gethostbyname(self.rrf_host)
+
             cfg_json = json.loads(requests.get(self.rrf_address + '/rr_config').text)
             self.cfg_board.append({
                 'board': cfg_json['firmwareElectronics'],
@@ -61,20 +69,30 @@ class DuetRRF3(QThread):
                     'cur_temp': 0
                 })
         except Exception as e:
-            self.err = 'Connection to {} failed. Exception returned: {}'.format(self.rrf_address, e)
+            self.err = 'Connection to {} failed. Exception returned: {}'.format(self.rrf_host, e)
             self.sig_failure.emit()
             return
 
         self.sig_connected.emit()
         self.run_thread = True
+
+        ''' The main status update pulls from /rr_status as this returns 
+        faster, and causes less load on RRF, than querying the object model. '''
         while self.run_thread:
-            sensors = self.get_objectmodel('heat.heaters')
+            status_json = json.loads(requests.get(self.rrf_address + '/rr_status').text)
+
+            ''' If the sum of the homed json equals the len, all axes are reporting
+            1 as their status, meaning they are homed. '''
+            self.homed = True if sum(status_json['homed']) == len(status_json['homed']) else False
+            self.idle = True if status_json['status'] == 'I' else False
+
             for tool, data in enumerate(self.cfg_tools):
-                self.cfg_tools[tool]['cur_temp'] = sensors[data['heater']]['current']
-                if sensors[data['heater']]['active'] != 0 and sensors[data['heater']]['active'] <= sensors[data['heater']]['current']:
+                self.cfg_tools[tool]['cur_temp'] = status_json['heaters'][data['heater']]
+                if status_json['active'][data['heater']] != 0 and status_json['heaters'][data['heater']] >= status_json['active'][data['heater']]:
                     self.sig_temp_reached.emit(tool)
             self.sig_data_update.emit()
-            sleep(5)
+            QTimer.singleShot(1000, self.loop.quit)
+            self.loop.exec_()
 
         self.sig_finished.emit()
 
@@ -86,8 +104,9 @@ class DuetRRF3(QThread):
         return
 
     def estop(self):
-        self.run_thread = False
+        ''' Emergency stop. '''
         self.send_gcode('M112')
+        self.run_thread = False
 
     def move_homeaxes(self):
         ''' Home all axes on the printer. '''
@@ -133,10 +152,7 @@ class DuetRRF3(QThread):
         self.send_gcode(gcode)
 
     def wait_for_idle(self):
-        ''' Reads /rr_status?type=1 waiting for the printer to report
-        that it is idle. Used to wait between extrusions. '''
-        status = ''
-        while status != 'I':
-            r = requests.get(self.rrf_address + '/rr_status?', {'type': 1})
-            status = json.loads(r.text)['status']
-            time.sleep(1)
+        ''' Waits for self.idle to be true, processing the event loop whilst
+        doing so. This is mainly used to wait between extrusions. '''
+        while not self.idle:
+            self.loop.exec_()
