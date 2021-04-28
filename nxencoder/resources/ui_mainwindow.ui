@@ -365,9 +365,6 @@
           <bold>false</bold>
          </font>
         </property>
-        <property name="text">
-         <string>vcore3.local</string>
-        </property>
        </widget>
       </item>
       <item row="4" column="1">
@@ -457,7 +454,7 @@
     <property name="geometry">
      <rect>
       <x>5</x>
-      <y>260</y>
+      <y>259</y>
       <width>813</width>
       <height>421</height>
      </rect>
@@ -481,7 +478,7 @@
         <x>10</x>
         <y>10</y>
         <width>261</width>
-        <height>261</height>
+        <height>331</height>
        </rect>
       </property>
       <property name="title">
@@ -493,12 +490,28 @@
          <x>10</x>
          <y>20</y>
          <width>241</width>
-         <height>230</height>
+         <height>308</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="layout_coarse_results" columnminimumwidth="100,0,0">
-        <item row="4" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_5_static">
+        <item row="8" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_9">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_10_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -506,25 +519,44 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 5</string>
+           <string>Iteration 10</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_4_static">
+        <item row="9" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_10">
           <property name="font">
            <font>
             <weight>50</weight>
             <bold>false</bold>
            </font>
           </property>
-          <property name="text">
-           <string>Iteration 4</string>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="txt_esteps_coarse_1">
+        <item row="8" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_9">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_10">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -555,8 +587,8 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_3_static">
+        <item row="4" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_5_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -564,12 +596,70 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 3</string>
+           <string>Iteration 5</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_1">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_4_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Iteration 4</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_1_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Iteration 1</string>
           </property>
          </widget>
         </item>
         <item row="1" column="2">
          <widget class="QLineEdit" name="txt_esteps_coarse_pct_2">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_1">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -597,8 +687,8 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_1_static">
+        <item row="2" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_3_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -606,36 +696,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLineEdit" name="txt_esteps_coarse_pct_1">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_6_static">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Iteration 6</string>
+           <string>Iteration 3</string>
           </property>
          </widget>
         </item>
@@ -652,30 +713,32 @@
           </property>
          </widget>
         </item>
-        <item row="8" column="1">
-         <widget class="QLineEdit" name="txt_esteps_coarse_avg">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <item row="5" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_6_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
           </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="2">
-         <widget class="QLineEdit" name="txt_esteps_coarse_pct_avg">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="lbl_esteps_coarse_avg_static">
           <property name="text">
-           <string>Average</string>
+           <string>Iteration 6</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_4">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -711,22 +774,6 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="QLineEdit" name="txt_esteps_coarse_5">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <widget class="QLineEdit" name="txt_esteps_coarse_3">
           <property name="font">
@@ -743,8 +790,8 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
-         <widget class="QLineEdit" name="txt_esteps_coarse_pct_4">
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_5">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -804,22 +851,6 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QLineEdit" name="txt_esteps_coarse_7">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="7" column="1">
          <widget class="QLineEdit" name="txt_esteps_coarse_8">
           <property name="font">
@@ -836,8 +867,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="2">
-         <widget class="QLineEdit" name="txt_esteps_coarse_pct_8">
+        <item row="6" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_7">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -868,6 +899,22 @@
           </property>
          </widget>
         </item>
+        <item row="7" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_8">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item row="5" column="2">
          <widget class="QLineEdit" name="txt_esteps_coarse_pct_6">
           <property name="font">
@@ -884,6 +931,59 @@
           </property>
          </widget>
         </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_9_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Iteration 9</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QLabel" name="lbl_esteps_coarse_avg_static">
+          <property name="text">
+           <string>Average</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QLineEdit" name="txt_esteps_coarse_avg">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
+         <widget class="QLineEdit" name="txt_esteps_coarse_pct_avg">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -893,7 +993,7 @@
         <x>280</x>
         <y>10</y>
         <width>261</width>
-        <height>261</height>
+        <height>331</height>
        </rect>
       </property>
       <property name="title">
@@ -905,19 +1005,44 @@
          <x>10</x>
          <y>20</y>
          <width>241</width>
-         <height>231</height>
+         <height>308</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="layout_fine_results" columnminimumwidth="100,0,0">
-        <item row="8" column="0">
-         <widget class="QLabel" name="lbl_esteps_fine_avg_static">
-          <property name="text">
-           <string>Average</string>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_6">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="lbl_esteps_fine_5_static_2">
+        <item row="7" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_8">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_8_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -925,11 +1050,91 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 6</string>
+           <string>Iteration 8</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="2">
+        <item row="6" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_7">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_5">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_8">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_6">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_7">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
          <widget class="QLineEdit" name="txt_esteps_fine_pct_avg">
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -939,18 +1144,8 @@
           </property>
          </widget>
         </item>
-        <item row="8" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_avg">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="6" column="0">
-         <widget class="QLabel" name="lbl_esteps_fine_5_static_3">
+         <widget class="QLabel" name="lbl_esteps_fine_7_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -962,8 +1157,8 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="lbl_esteps_fine_2_static">
+        <item row="5" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_6_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -971,7 +1166,24 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 2</string>
+           <string>Iteration 6</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_avg">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_avg_static">
+          <property name="text">
+           <string>Average</string>
           </property>
          </widget>
         </item>
@@ -1033,6 +1245,19 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_2_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Iteration 2</string>
+          </property>
+         </widget>
+        </item>
         <item row="3" column="0">
          <widget class="QLabel" name="lbl_esteps_fine_4_static">
           <property name="font">
@@ -1043,6 +1268,22 @@
           </property>
           <property name="text">
            <string>Iteration 4</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_4">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -1075,22 +1316,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_4">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="2">
          <widget class="QLineEdit" name="txt_esteps_fine_pct_3">
           <property name="font">
@@ -1107,8 +1332,8 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="2">
-         <widget class="QLineEdit" name="txt_esteps_fine_pct_5">
+        <item row="1" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_2">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1155,8 +1380,8 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
-         <widget class="QLineEdit" name="txt_esteps_fine_pct_2">
+        <item row="4" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_5">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1171,24 +1396,8 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_5">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="lbl_esteps_fine_5_static_4">
+        <item row="8" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_9_static">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1196,12 +1405,25 @@
            </font>
           </property>
           <property name="text">
-           <string>Iteration 8</string>
+           <string>Iteration 9</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_6">
+        <item row="9" column="0">
+         <widget class="QLabel" name="lbl_esteps_fine_10_static">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Iteration 10</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_9">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1216,8 +1438,8 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_7">
+        <item row="8" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_9">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1232,8 +1454,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
-         <widget class="QLineEdit" name="txt_esteps_fine_8">
+        <item row="9" column="2">
+         <widget class="QLineEdit" name="txt_esteps_fine_pct_10">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1248,8 +1470,8 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="2">
-         <widget class="QLineEdit" name="txt_esteps_fine_pct_6">
+        <item row="9" column="1">
+         <widget class="QLineEdit" name="txt_esteps_fine_10">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1264,37 +1486,18 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="2">
-         <widget class="QLineEdit" name="txt_esteps_fine_pct_7">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
+        <item row="10" column="0">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
           </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="2">
-         <widget class="QLineEdit" name="txt_esteps_fine_pct_8">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -1304,7 +1507,7 @@
        <rect>
         <x>10</x>
         <y>360</y>
-        <width>701</width>
+        <width>791</width>
         <height>23</height>
        </rect>
       </property>
@@ -1315,8 +1518,8 @@
      <widget class="QPushButton" name="pushButton">
       <property name="geometry">
        <rect>
-        <x>720</x>
-        <y>360</y>
+        <x>630</x>
+        <y>190</y>
         <width>75</width>
         <height>23</height>
        </rect>
@@ -1325,24 +1528,24 @@
        <string>Abort</string>
       </property>
      </widget>
-     <widget class="QGroupBox" name="groupbox_esteps_coarse_results">
+     <widget class="QGroupBox" name="groupbox_esteps_original">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>280</y>
-        <width>261</width>
+        <x>550</x>
+        <y>10</y>
+        <width>251</width>
         <height>71</height>
        </rect>
       </property>
       <property name="title">
-       <string>Calculated extruder steps/mm</string>
+       <string>Original extruder steps/mm</string>
       </property>
-      <widget class="QLineEdit" name="txt_esteps_coarse_esteps">
+      <widget class="QLineEdit" name="txt_esteps_original">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>241</width>
+         <width>231</width>
          <height>41</height>
         </rect>
        </property>
@@ -1362,24 +1565,24 @@
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupbox_esteps_fine_results">
+     <widget class="QGroupBox" name="groupbox_esteps_results">
       <property name="geometry">
        <rect>
-        <x>280</x>
-        <y>279</y>
-        <width>261</width>
+        <x>550</x>
+        <y>90</y>
+        <width>251</width>
         <height>71</height>
        </rect>
       </property>
       <property name="title">
        <string>Calculated extruder steps/mm</string>
       </property>
-      <widget class="QLineEdit" name="txt_esteps_fine_esteps">
+      <widget class="QLineEdit" name="txt_esteps_calculated">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>241</width>
+         <width>231</width>
          <height>41</height>
         </rect>
        </property>
@@ -1387,6 +1590,9 @@
         <font>
          <pointsize>14</pointsize>
         </font>
+       </property>
+       <property name="text">
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1461,6 +1667,9 @@
      <layout class="QFormLayout" name="layout_priner_settings">
       <property name="horizontalSpacing">
        <number>10</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>9</number>
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="lbl_tool_static">
@@ -1538,24 +1747,20 @@
        <x>240</x>
        <y>20</y>
        <width>224</width>
-       <height>81</height>
+       <height>82</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="layout_priner_status">
       <property name="horizontalSpacing">
        <number>10</number>
       </property>
+      <property name="verticalSpacing">
+       <number>9</number>
+      </property>
       <item row="1" column="0">
        <widget class="QLabel" name="lbl_tool_curtemp_static">
         <property name="text">
          <string>Temperature (Current)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lbl_tool_curstep_static">
-        <property name="text">
-         <string>Extruder steps/mm</string>
         </property>
        </widget>
       </item>
@@ -1572,7 +1777,21 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lbl_tool_temperature_static">
+        <property name="text">
+         <string>Extruder steps/mm</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lbl_tool_curstep_static">
+        <property name="text">
+         <string>Temperature (Set)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
        <widget class="QLineEdit" name="txt_tool_curstep">
         <property name="font">
          <font>
@@ -1585,14 +1804,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lbl_tool_temperature_static">
-        <property name="text">
-         <string>Temperature (Set)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
+      <item row="2" column="1">
        <widget class="QSpinBox" name="dsbx_tool_temp">
         <property name="font">
          <font>
@@ -1600,11 +1812,11 @@
           <bold>false</bold>
          </font>
         </property>
-        <property name="minimum">
-         <number>150</number>
-        </property>
         <property name="maximum">
          <number>300</number>
+        </property>
+        <property name="value">
+         <number>190</number>
         </property>
        </widget>
       </item>
@@ -1636,7 +1848,7 @@
      <property name="geometry">
       <rect>
        <x>480</x>
-       <y>50</y>
+       <y>49</y>
        <width>131</width>
        <height>23</height>
       </rect>
@@ -1658,7 +1870,7 @@
      <property name="geometry">
       <rect>
        <x>480</x>
-       <y>80</y>
+       <y>78</y>
        <width>131</width>
        <height>23</height>
       </rect>
