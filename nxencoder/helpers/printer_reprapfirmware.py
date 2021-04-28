@@ -26,6 +26,7 @@ import json
 import requests
 import socket
 
+
 class DuetRRF3(QObject):
     sig_connected = pyqtSignal()
     sig_failure = pyqtSignal()
@@ -76,13 +77,14 @@ class DuetRRF3(QObject):
         self.sig_connected.emit()
         self.run_thread = True
 
-        ''' The main status update pulls from /rr_status as this returns 
-        faster, and causes less load on RRF, than querying the object model. '''
+        ''' The main status update pulls from /rr_status as this returns
+        faster, and causes less load on RRF, than querying the object
+        model. '''
         while self.run_thread:
             status_json = json.loads(requests.get(self.rrf_address + '/rr_status').text)
 
-            ''' If the sum of the homed json equals the len, all axes are reporting
-            1 as their status, meaning they are homed. '''
+            ''' If the sum of the homed json equals the len, all axes are
+            reporting 1 as their status, meaning they are homed. '''
             self.homed = True if sum(status_json['homed']) == len(status_json['homed']) else False
             self.idle = True if status_json['status'] == 'I' else False
 
@@ -124,7 +126,7 @@ class DuetRRF3(QObject):
     def send_gcode(self, gcode):
         ''' Transmit gcode to the printer via the HTTP interface. '''
         requests.get(self.rrf_address + '/rr_gcode?', {'gcode': gcode})
-    
+
     def get_objectmodel(self, key=''):
         ''' Read the object model, returning a json object containing
         the resulting data. '''
@@ -139,8 +141,9 @@ class DuetRRF3(QObject):
         self.send_gcode('M104 S{} T{}'.format(temp, tool))
 
     def set_tool_esteps(self, esteps, tool=0):
-        ''' Change the esteps of the extruder configured to the specified 
-        tool. Internally update our configuration with the new value as well. '''
+        ''' Change the esteps of the extruder configured to the
+        specified tool. Internally update our configuration with
+        the new value as well. '''
         self.cfg_tools[tool]['stepsPerMm'] = float(esteps)
         gcode = 'M92 E'
         esteps_list = []
@@ -152,7 +155,8 @@ class DuetRRF3(QObject):
         self.send_gcode(gcode)
 
     def wait_for_idle(self):
-        ''' Waits for self.idle to be true, processing the event loop whilst
-        doing so. This is mainly used to wait between extrusions. '''
+        ''' Waits for self.idle to be true, processing the event loop
+        whilst doing so. This is mainly used to wait between
+        extrusions. '''
         while not self.idle:
             self.loop.exec_()

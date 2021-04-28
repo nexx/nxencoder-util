@@ -32,6 +32,7 @@ from resources.ui_mainwindow import Ui_MainWindow
 
 import time
 
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     sig_serial_disable = pyqtSignal()
     sig_serial_enable = pyqtSignal()
@@ -121,7 +122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_disconnected.assignProperty(self.btn_printer_disconnect, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.tabMain, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.cbx_tool, 'enabled', False)
-        
+
         self.state_printer_connecting = QState(self.state_printer)
         self.state_printer_connecting.assignProperty(self.lbl_printer_status, 'text', 'Connecting')
         self.state_printer_connecting.assignProperty(self.lbl_printer_status, 'styleSheet', 'color: rgb(170, 170, 0)')
@@ -154,20 +155,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def log_event(self, text, debug=False):
         ''' Log text to the GUI event log. '''
-        if debug and not self.actn_verboselog.isChecked(): return
+        if debug and not self.actn_verboselog.isChecked():
+            return
         self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), text))
 
     def log_save(self):
         ''' Save the contents of the event log to a file chosen by QFileDialog. '''
-        log_filename, _ = QFileDialog.getSaveFileName(self, 'Save the Event Log as...', 'eventlog.txt', 'Text files (*.txt)' )
+        log_filename, _ = QFileDialog.getSaveFileName(self, 'Save the Event Log as...', 'eventlog.txt', 'Text files (*.txt)')
         f = open(log_filename, 'w')
         f.write(self.pte_eventlog.toPlainText())
         f.close()
         self.log_event('Log saved to {}'.format(log_filename))
 
     def populate_serial_ports(self):
-        ''' Populate the encoder combobox with available system serial
-        ports. Also called when the user hits the refresh button. '''
+        ''' Populate the encoder combobox with available system serial ports.
+        Also called when the user hits the refresh button. '''
         self.cbx_encoder_port.clear()
 
         # FIXME: This fixes a bug where no serial ports are available on launch
@@ -205,16 +207,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sig_encoder_disconnect.emit()
 
     def encoder_handshake(self):
-        ''' The encoder returned a handshake, process and update the
-        GUI with the details '''
+        ''' The encoder returned a handshake, process and update the GUI with
+        the details '''
         self.sig_encoder_connect.emit()
         self.log_event('Connected to encoder')
         self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
         self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
 
     def encoder_measurement(self, measurement):
-        ''' The encoder returned a measurement, process and update
-        the GUI with the details '''
+        ''' The encoder returned a measurement, process and update the GUI
+        with the details '''
         self.log_event('[SERIAL] Measurement received: {}'.format(measurement), True)
         if self.tabMain.currentIndex() == 0:
             return
@@ -272,14 +274,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.groupbox_settings.setEnabled(False)
 
     def printer_update(self):
-        ''' The printer has signalled that updated data is
-        available. '''
-        if self.printer == None:
+        ''' The printer has signalled that updated data is available. '''
+        if self.printer is None:
             return
         tool_data = self.printer.cfg_tools[self.current_tool]
         self.txt_tool_curstep.setText('{}'.format(tool_data['stepsPerMm']))
         self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
-        #print(tool_data)
 
     def printer_disconnect(self):
         ''' Disconnect from the printer '''
@@ -293,7 +293,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_temp_reached(self, tool):
         ''' The printer has signalled the tool has hit the
         requested temperature. '''
-        #FIXME: Do not enable btn_tool_run if a job is running
+        # FIXME: Do not enable btn_tool_run if a job is running
         if tool != self.current_tool:
             self.log_event('WARNING: Tool {} is at temperature, but it is not the active tool. Setting its temperature to 0C.'.format(tool))
             self.printer.set_tool_temperature(0, tool)
@@ -319,9 +319,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.printer.set_tool_temperature(self.dsbx_tool_temp.text(), self.current_tool)
 
     def gui_tool_update(self, index):
-        ''' Signalled when the tool combobox is altered. If we change
-        tool, we must update aspects of the GUI and make sure the previous
-        tool heater is disabled. '''
+        ''' Signalled when the tool combobox is altered. If we change tool, we
+        must update aspects of the GUI and make sure the previous tool heater
+        is disabled. '''
         if index != -1:
             self.log_event('Selecting tool {}'.format(index))
             if self.current_tool != index:
@@ -330,8 +330,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def gui_tab_update(self, index):
         ''' Signalled when the user changes tab on the bottom of the
-        application. Use this to update the run button text to represent
-        what it will do. '''
+        application. Use this to update the run button text to represent what
+        it will do. '''
         if index == 0:
             self.btn_tool_run.setText('Run Extruder Calibration')
             return
@@ -343,15 +343,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
     def printer_estop(self):
-        ''' Trigger an immediate emergency stop and then close all
-        printer connections. '''
+        ''' Trigger an immediate emergency stop and then close all printer
+        connections. '''
         self.log_event('**** EMERGENCY STOP TRIGGERED ****')
         self.printer.estop()
         self.printer_disconnect()
 
     def printer_run(self):
-        ''' Triggered when the run button is pressed. We determine the
-        correct test to run based upon tabMain.currentIndex(). '''
+        ''' Triggered when the run button is pressed. We determine the correct
+        test to run based upon tabMain.currentIndex(). '''
         if self.tabMain.currentIndex() == 0:
             self.tabMain.setTabEnabled(1, False)
             self.tabMain.setTabEnabled(2, False)
@@ -374,8 +374,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
     def printer_calibrate_esteps(self):
-        ''' Run a calibration loop to calculate the extruder esteps.
-        If we have been passed a previous result, evaluate that. '''
+        ''' Run a calibration loop to calculate the extruder esteps. '''
         for i in self.tab_esteps.findChildren(QLineEdit):
             i.clear()
 
@@ -393,8 +392,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread_worker.start()
 
     def esteps_data_ready(self):
-        ''' Signalled when the esteps calibration worker has
-        completed an iteration and the data is ready for the GUI. '''
+        ''' Signalled when the esteps calibration worker has completed an
+        iteration and the data is ready for the GUI. '''
         current_tool_esteps = self.printer.cfg_tools[self.current_tool]['stepsPerMm']
 
         results_num = len(self.worker_esteps.cal_results)
@@ -402,9 +401,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.progress_esteps.setValue(results_pct)
 
         for i in range(len(self.worker_esteps.cal_results[0:8])):
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(i+1))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(i + 1))
             qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(i+1))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(i + 1))
             qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i] / 20) * 100))
 
         distance_avg = sum(self.worker_esteps.cal_results[0:8]) / len(self.worker_esteps.cal_results[0:8])
@@ -422,10 +421,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         for i in range(len(self.worker_esteps.cal_results[8:17])):
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i+1))
-            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i+8]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i+1))
-            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i+8] / 50) * 100))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i + 1))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i + 8]))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i + 1))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i + 8] / 50) * 100))
 
         distance_avg = sum(self.worker_esteps.cal_results[8:17]) / len((self.worker_esteps.cal_results[8:17]))
         distance_pct = distance_avg / 50
@@ -439,26 +438,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
     def esteps_finished(self):
-        ''' Signalled when the esteps process has completed. We
-        can now perform a report on the extruder steps. '''
+        ''' Signalled when the esteps process has completed. We can now
+        perform a report on the extruder steps. '''
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(1, True)
         self.tabMain.setTabEnabled(2, True)
 
     def chart_const_finished(self):
-        ''' Signalled when the readings for the chart have completed. We
-        can now perform a report on the extruder consistency. '''
-        #TODO: Show results to user and also log to the event log
+        ''' Signalled when the readings for the chart have completed. We can
+        now perform a report on the extruder consistency. '''
+        # TODO: Show results to user and also log to the event log
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(2, True)
-    
+
     def chart_vol_finished(self):
-        ''' Signalled when the readings for the chart have completed. We
-        can now perform a report on the maximum volumetric throughput. '''
+        ''' Signalled when the readings for the chart have completed. We can
+        now perform a report on the maximum volumetric throughput. '''
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(1, True)
+
 
 if __name__ == '__main__':
     app = QApplication([])

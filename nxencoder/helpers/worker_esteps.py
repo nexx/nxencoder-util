@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject, QTimer
 
+
 class WorkerEsteps(QObject):
     sig_encoder_measure = pyqtSignal()
     sig_encoder_reset = pyqtSignal()
@@ -42,7 +43,7 @@ class WorkerEsteps(QObject):
         self.loop = QEventLoop()
         self.cal_results.clear()
 
-        for self.iteration in range(0,16):
+        for self.iteration in range(0, 16):
             self.sig_encoder_reset.emit()
             if self.iteration <= 7:
                 self.sig_event_log.emit('[ESTEPS] Running iteration {} (coarse)'.format(self.iteration + 1), True)
@@ -57,7 +58,7 @@ class WorkerEsteps(QObject):
             self.loop.exec_()
 
             self.sig_encoder_measure.emit()
-            
+
             QTimer.singleShot(500, self.loop.quit)
             self.loop.exec_()
 
