@@ -42,6 +42,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     sig_printer_disconnect = pyqtSignal()
     sig_chart_const_finished = pyqtSignal()
 
+    working = False
+
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -281,6 +283,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.txt_tool_curstep.setText('{}'.format(tool_data['stepsPerMm']))
         self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
 
+        if self.printer.homed and not self.working:
+            self.btn_tool_center.setEnabled(True)
+
     def printer_disconnect(self):
         ''' Disconnect from the printer '''
         self.cbx_tool.clear()
@@ -293,7 +298,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_temp_reached(self, tool):
         ''' The printer has signalled the tool has hit the
         requested temperature. '''
-        # FIXME: Do not enable btn_tool_run if a job is running
+        if self.working:
+            return
         if tool != self.current_tool:
             self.log_event('WARNING: Tool {} is at temperature, but it is not the active tool. Setting its temperature to 0C.'.format(tool))
             self.printer.set_tool_temperature(0, tool)
@@ -352,6 +358,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_run(self):
         ''' Triggered when the run button is pressed. We determine the correct
         test to run based upon tabMain.currentIndex(). '''
+        self.working = True
         if self.tabMain.currentIndex() == 0:
             self.tabMain.setTabEnabled(1, False)
             self.tabMain.setTabEnabled(2, False)
@@ -378,6 +385,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in self.tab_esteps.findChildren(QLineEdit):
             i.clear()
 
+        self.txt_esteps_original.setText(str(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
+
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_worker)
 
@@ -397,42 +406,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         current_tool_esteps = self.printer.cfg_tools[self.current_tool]['stepsPerMm']
 
         results_num = len(self.worker_esteps.cal_results)
-        results_pct = round((results_num / 16) * 100)
+        results_pct = round((results_num / 20) * 100)
         self.progress_esteps.setValue(results_pct)
 
-        for i in range(len(self.worker_esteps.cal_results[0:8])):
+        for i in range(len(self.worker_esteps.cal_results[0:10])):
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(i + 1))
             qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i]))
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(i + 1))
-            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i] / 20) * 100))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i] / self.worker_esteps.distance_coarse) * 100))
 
-        distance_avg = sum(self.worker_esteps.cal_results[0:8]) / len(self.worker_esteps.cal_results[0:8])
-        distance_pct = distance_avg / 20
+        distance_avg = sum(self.worker_esteps.cal_results[0:10]) / len(self.worker_esteps.cal_results[0:10])
+        distance_pct = distance_avg / self.worker_esteps.distance_coarse
         self.txt_esteps_coarse_avg.setText('{:.2f} mm'.format(distance_avg))
         self.txt_esteps_coarse_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
-        self.txt_esteps_coarse_esteps.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+        self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
 
-        if len(self.worker_esteps.cal_results) == 8:
+        if len(self.worker_esteps.cal_results) == 10:
             self.log_event('Calculated coarse eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
-        if len(self.worker_esteps.cal_results) < 9:
+        if len(self.worker_esteps.cal_results) < 11:
             return
 
-        for i in range(len(self.worker_esteps.cal_results[8:17])):
+        for i in range(len(self.worker_esteps.cal_results[10:19])):
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i + 1))
-            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i + 8]))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i + 10]))
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i + 1))
-            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i + 8] / 50) * 100))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i + 10] / self.worker_esteps.distance_fine) * 100))
 
-        distance_avg = sum(self.worker_esteps.cal_results[8:17]) / len((self.worker_esteps.cal_results[8:17]))
-        distance_pct = distance_avg / 50
+        distance_avg = sum(self.worker_esteps.cal_results[10:19]) / len((self.worker_esteps.cal_results[10:19]))
+        distance_pct = distance_avg / self.worker_esteps.distance_fine
         self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
         self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
-        self.txt_esteps_fine_esteps.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+        self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
 
-        if len(self.worker_esteps.cal_results) == 16:
+        if len(self.worker_esteps.cal_results) == 20:
             self.log_event('Calculated final eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
@@ -443,6 +452,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(1, True)
         self.tabMain.setTabEnabled(2, True)
+        self.working = False
 
     def chart_const_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
@@ -451,6 +461,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(2, True)
+        self.working = False
 
     def chart_vol_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
@@ -458,6 +469,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(1, True)
+        self.working = False
 
 
 if __name__ == '__main__':

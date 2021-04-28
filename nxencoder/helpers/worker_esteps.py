@@ -30,6 +30,13 @@ class WorkerEsteps(QObject):
     sig_event_log = pyqtSignal(str, bool)
     sig_result_ready = pyqtSignal()
 
+    distance_coarse = 20
+    distance_fine = 50
+    feedrate_coarse = 240
+    feedrate_fine = 120
+    delay_coarse = ((distance_coarse / (feedrate_coarse / 60)) + 1) * 1000
+    delay_fine = ((distance_fine / (feedrate_fine / 60)) + 1) * 1000
+
     cal_results = []
 
     iteration = 0
@@ -42,18 +49,17 @@ class WorkerEsteps(QObject):
         iterations. '''
         self.loop = QEventLoop()
         self.cal_results.clear()
-
-        for self.iteration in range(0, 16):
+        for self.iteration in range(0, 20):
             self.sig_encoder_reset.emit()
-            if self.iteration <= 7:
+            if self.iteration <= 9:
                 self.sig_event_log.emit('[ESTEPS] Running iteration {} (coarse)'.format(self.iteration + 1), True)
-                self.sig_printer_send_gcode.emit('G1 E20 F240')
-                QTimer.singleShot(7500, self.loop.quit)
+                self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_coarse, self.feedrate_coarse))
+                QTimer.singleShot(self.delay_coarse, self.loop.quit)
 
-            if self.iteration >= 8:
+            if self.iteration >= 10:
                 self.sig_event_log.emit('[ESTEPS] Running iteration {} (fine)'.format(self.iteration + 1), True)
-                self.sig_printer_send_gcode.emit('G1 E50 F120')
-                QTimer.singleShot(30000, self.loop.quit)
+                self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_fine, self.feedrate_fine))
+                QTimer.singleShot(self.delay_fine, self.loop.quit)
 
             self.loop.exec_()
 
