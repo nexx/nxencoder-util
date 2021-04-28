@@ -24,6 +24,7 @@ from PyQt5.QtCore import Qt, QPointF
 from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 import sys
 
+
 class ConsistencyChart:
     def __init__(self):
         self.series = QLineSeries()
@@ -51,7 +52,7 @@ class ConsistencyChart:
         deviation = (-1 + value) * 100
         self.series.append(float(elapsed), float(deviation))
         self.count += 1
-    
+
     def dump(self):
         ''' Dump the data points to the console. '''
         t = {}
