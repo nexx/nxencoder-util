@@ -27,7 +27,7 @@ import requests
 import socket
 
 
-class DuetRRF3(QObject):
+class RepRapFirmware3(QObject):
     sig_connected = pyqtSignal()
     sig_failure = pyqtSignal()
     sig_data_update = pyqtSignal()
@@ -35,7 +35,7 @@ class DuetRRF3(QObject):
     sig_finished = pyqtSignal()
 
     def __init__(self, host, parent=None):
-        super(DuetRRF3, self).__init__(parent)
+        super(RepRapFirmware3, self).__init__(parent)
         self.rrf_host = host
         self.idle = False
         self.homed = False

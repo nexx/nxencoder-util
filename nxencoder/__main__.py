@@ -25,7 +25,7 @@ from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow
 
 from helpers.chart_consistency import ConsistencyChart
-from helpers.printer_reprapfirmware import DuetRRF3
+from helpers.printer_reprapfirmware import RepRapFirmware3
 from helpers.serial_encoder import SerialEncoder
 from helpers.worker_esteps import WorkerEsteps
 from resources.ui_mainwindow import Ui_MainWindow
@@ -241,7 +241,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' Connect to the specified firmware '''
         self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
         if self.cbx_printer_fwtype.currentIndex() == 0:
-            self.printer = DuetRRF3(self.txt_printer_hostname.text())
+            self.printer = RepRapFirmware3(self.txt_printer_hostname.text())
 
         self.printer.moveToThread(self.thread_printer)
         self.thread_printer.started.connect(self.printer.run)
