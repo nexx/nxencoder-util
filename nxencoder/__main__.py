@@ -269,6 +269,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' The printer connection failed. '''
         self.printer.run_thread = False
         self.thread_printer.quit()
+        self.thread_printer.started.disconnect()
+
         self.log_event('Error connecting to printer')
         self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
         self.printer = None
@@ -452,6 +454,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(1, True)
         self.tabMain.setTabEnabled(2, True)
+        self.thread_worker.quit()
+        self.thread_worker.started.disconnect()
         self.working = False
 
     def chart_const_finished(self):
