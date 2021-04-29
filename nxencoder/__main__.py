@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from PyQt5.QtCore import Qt, QState, QStateMachine, QThread, pyqtSignal, QCoreApplication
 from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow
+from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox
 
 from helpers.chart_consistency import ConsistencyChart
 from helpers.printer_reprapfirmware import RepRapFirmware3
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.init_gui()
         self.show()
-        self.log_event('Program started')
+        self.log_event('Logging started')
 
     def init_gui(self):
         ''' Set the start-up state for GUI elements, initialise the state
@@ -155,11 +155,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.populate_serial_ports()
 
-    def log_event(self, text, debug=False):
+    def log_event(self, event):
         ''' Log text to the GUI event log. '''
-        if debug and not self.actn_verboselog.isChecked():
-            return
-        self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), text))
+        self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), event))
+
+    def log_debug(self, event):
+        ''' Log debug event to the GUI event log if the verbose option is
+        enabled. '''
+        if self.actn_verboselog.isChecked():
+            self.log_event(event)
 
     def log_save(self):
         ''' Save the contents of the event log to a file chosen by QFileDialog. '''
@@ -168,6 +172,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         f.write(self.pte_eventlog.toPlainText())
         f.close()
         self.log_event('Log saved to {}'.format(log_filename))
+
+    def error_critical(self, error):
+        ''' Handle a critical error. Show the user a QMessageBox and also log
+        the error to the event log. Optionally handle a detailed error to log
+        to the verbose log. '''
+        self.log_event(error)
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText('A critical error has occured:')
+        msg.setInformativeText(error)
+        msg.setWindowTitle('Error')
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
     def populate_serial_ports(self):
         ''' Populate the encoder combobox with available system serial ports.
@@ -179,27 +196,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QCoreApplication.processEvents()
         self.serial_ports = QSerialPortInfo.availablePorts()
         if not self.serial_ports:
-            self.log_event('[SERIAL] No serial ports detected', True)
+            self.log_debug('[SERIAL] No serial ports detected')
             self.sig_serial_disable.emit()
             return
         self.sig_serial_enable.emit()
         for port in self.serial_ports:
-            self.log_event('[SERIAL] Found port: {} - {}'.format(port.portName(), port.description()), True)
+            self.log_debug('[SERIAL] Found port: {} - {}'.format(port.portName(), port.description()))
             self.cbx_encoder_port.addItem('{}: {}'.format(port.portName(), port.description()))
 
     def encoder_connect(self):
-        ''' Connect to the serial encoder via the serial_encoder class. '''
+        ''' Connect to the serial encoder via the SerialEncoder class. '''
         port = self.serial_ports[self.cbx_encoder_port.currentIndex()].portName()
         self.log_event('Attempting connection to encoder on {}'.format(port))
         self.encoder = SerialEncoder()
+        self.encoder.sig_log_event.connect(self.log_event)
+        self.encoder.sig_log_debug.connect(self.log_debug)
         self.encoder.sig_handshake.connect(self.encoder_handshake)
         self.encoder.sig_measurement.connect(self.encoder_measurement)
+        self.encoder.sig_error.connect(self.error_critical)
+        self.encoder.sig_force_close.connect(self.encoder_disconnect)
         self.sig_encoder_connect.emit()
-        if not self.encoder.connect(port):
-            self.log_event('Error connecting to the encoder')
-            self.log_event('[SERIAL] [ERROR] {}'.format(self.encoder.err), True)
-            self.encoder = None
-            self.sig_encoder_disconnect.emit()
+        self.encoder.connect(port)
 
     def encoder_disconnect(self):
         ''' Disconnect from the serial encoder. '''
@@ -213,13 +230,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         the details '''
         self.sig_encoder_connect.emit()
         self.log_event('Connected to encoder')
-        self.log_event('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date), True)
+        self.log_debug('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date))
         self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
 
     def encoder_measurement(self, measurement):
         ''' The encoder returned a measurement, process and update the GUI
         with the details '''
-        self.log_event('[SERIAL] Measurement received: {}'.format(measurement), True)
+        self.log_debug('[SERIAL] Measurement received: {}'.format(measurement))
         if self.tabMain.currentIndex() == 0:
             return
         if self.tabMain.currentIndex() == 1:
@@ -245,9 +262,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.printer.moveToThread(self.thread_printer)
         self.thread_printer.started.connect(self.printer.run)
+        self.printer.sig_log_event.connect(self.log_event)
+        self.printer.sig_log_debug.connect(self.log_debug)
         self.printer.sig_finished.connect(self.thread_printer.quit)
         self.printer.sig_connected.connect(self.printer_connected)
-        self.printer.sig_failure.connect(self.printer_failure)
+        self.printer.sig_error.connect(self.error_critical)
+        self.printer.sig_force_close.connect(self.printer_force_close)
         self.printer.sig_data_update.connect(self.printer_update)
         self.printer.sig_temp_reached.connect(self.printer_temp_reached)
         self.thread_printer.start()
@@ -256,23 +276,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_connected(self):
         ''' The printer connection established sucessfully. '''
         self.sig_printer_connect.emit()
-        self.log_event('Connected to printer')
-        self.log_event('[RRF3-STD] Printer Firmware: v{} running on: {}'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']), True)
-        self.log_event('[RRF3-STD] Found {} tool(s)'.format(len(self.printer.cfg_tools)), True)
-        self.lbl_printer_fw.setText('v{} ({})'.format(self.printer.cfg_board[0]['firmware'], self.printer.cfg_board[0]['board']))
+        self.lbl_printer_fw.setText(self.printer.fw_string)
         self.cbx_tool.clear()
         for tool, data in enumerate(self.printer.cfg_tools):
             self.cbx_tool.addItem('Tool {}'.format(tool))
         self.groupbox_settings.setEnabled(True)
 
-    def printer_failure(self):
-        ''' The printer connection failed. '''
-        self.printer.run_thread = False
+    def printer_force_close(self):
+        ''' A critical error occured in the printer class. Force
+        close the connection and clean up. '''
+        if self.printer is not None:
+            self.printer.run_thread = False
+        print(self.printer)
         self.thread_printer.quit()
         self.thread_printer.started.disconnect()
 
         self.log_event('Error connecting to printer')
-        self.log_event('[RRF-STD] [ERROR] {}'.format(self.printer.err), True)
         self.printer = None
         self.sig_printer_disconnect.emit()
         self.groupbox_settings.setEnabled(False)
@@ -391,12 +410,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_worker)
-
         self.worker_esteps.sig_encoder_measure.connect(self.encoder.measure)
         self.worker_esteps.sig_encoder_reset.connect(self.encoder.reset)
         self.worker_esteps.sig_printer_send_gcode.connect(self.printer.send_gcode)
-        self.worker_esteps.sig_event_log.connect(self.log_event)
-
+        self.worker_esteps.sig_log_debug.connect(self.log_debug)
         self.worker_esteps.sig_result_ready.connect(self.esteps_data_ready)
         self.thread_worker.started.connect(self.worker_esteps.run)
         self.encoder.sig_measurement.connect(self.worker_esteps.handle_measurement)

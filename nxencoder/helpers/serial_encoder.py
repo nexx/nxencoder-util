@@ -23,9 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtSerialPort import QSerialPort
 
+
 class SerialEncoder(QObject):
     sig_measurement = pyqtSignal(float)
     sig_handshake = pyqtSignal()
+    sig_log_event = pyqtSignal(str)
+    sig_log_debug = pyqtSignal(str)
+    sig_error = pyqtSignal(str)
+    sig_force_close = pyqtSignal()
 
     def __init__(self, parent=None):
         super(SerialEncoder, self).__init__(parent)
@@ -43,14 +48,14 @@ class SerialEncoder(QObject):
         self.encoder.setFlowControl(QSerialPort.NoFlowControl)
         self.encoder.open(QSerialPort.ReadWrite)
         self.encoder.readyRead.connect(self.receive)
+        self.encoder.errorOccurred.connect(self.error)
 
         if not self.encoder.isOpen():
-            self.err = 'Connection to {} failed.'.format(portName)
-            return False
-        return True
+            self.sig_error.emit('Connection to {} failed.'.format(portName))
+            self.sig_force_close.emit()
 
     def receive(self):
-        ''' Handle incoming data '''
+        ''' Handle incoming data. '''
         while self.encoder.canReadLine():
             raw_data = self.encoder.readLine()
             data = raw_data.data().decode().rstrip('\r\n')
@@ -62,12 +67,22 @@ class SerialEncoder(QObject):
                     _, self.firmware_version, self.firmware_date, self.interval, self.calibration = data.strip().split('|')
                     self.interval = int(self.interval)
                     self.sig_handshake.emit()
-                assert('Invalid data received from encoder. Raw: {}'.format(raw_data))
+                    return
+                self.sig_log_event.emit('Warning: Invalid data received from encoder. Raw: {}'.format(raw_data))
 
     def disconnect(self):
-        ''' Disconnect from the serial port '''
-        self.encoder.stop()
+        ''' Disconnect from the serial port. '''
+        self.stop()
         self.encoder.close()
+
+    def error(self, error):
+        ''' QSerialPort signalled an error. Report to the event log and
+        then signal the GUI to close the connection. '''
+        if error == QSerialPort.NoError:
+            return
+        self.sig_error.emit('The encoder connection reported an error and has been closed.')
+        self.sig_log_debug.emit('[SERIAL] Error: QSerialPort reported error code: {}'.format(error))
+        self.sig_force_close.emit()
 
     def measure(self):
         ''' Make the arduino report a measurement now. '''

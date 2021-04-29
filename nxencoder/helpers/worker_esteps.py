@@ -27,7 +27,7 @@ class WorkerEsteps(QObject):
     sig_encoder_measure = pyqtSignal()
     sig_encoder_reset = pyqtSignal()
     sig_printer_send_gcode = pyqtSignal(str)
-    sig_event_log = pyqtSignal(str, bool)
+    sig_log_debug = pyqtSignal(str)
     sig_result_ready = pyqtSignal()
 
     distance_coarse = 20
@@ -52,12 +52,12 @@ class WorkerEsteps(QObject):
         for self.iteration in range(0, 20):
             self.sig_encoder_reset.emit()
             if self.iteration <= 9:
-                self.sig_event_log.emit('[ESTEPS] Running iteration {} (coarse)'.format(self.iteration + 1), True)
+                self.sig_log_debug.emit('[ESTEPS] Running iteration {} (coarse)'.format(self.iteration + 1))
                 self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_coarse, self.feedrate_coarse))
                 QTimer.singleShot(self.delay_coarse, self.loop.quit)
 
             if self.iteration >= 10:
-                self.sig_event_log.emit('[ESTEPS] Running iteration {} (fine)'.format(self.iteration + 1), True)
+                self.sig_log_debug.emit('[ESTEPS] Running iteration {} (fine)'.format(self.iteration + 1))
                 self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_fine, self.feedrate_fine))
                 QTimer.singleShot(self.delay_fine, self.loop.quit)
 

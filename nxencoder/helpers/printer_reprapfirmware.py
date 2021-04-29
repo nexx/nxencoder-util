@@ -29,10 +29,13 @@ import socket
 
 class RepRapFirmware3(QObject):
     sig_connected = pyqtSignal()
-    sig_failure = pyqtSignal()
     sig_data_update = pyqtSignal()
     sig_temp_reached = pyqtSignal(int)
     sig_finished = pyqtSignal()
+    sig_log_event = pyqtSignal(str)
+    sig_log_debug = pyqtSignal(str)
+    sig_error = pyqtSignal(str)
+    sig_force_close = pyqtSignal()
 
     def __init__(self, host, parent=None):
         super(RepRapFirmware3, self).__init__(parent)
@@ -70,9 +73,15 @@ class RepRapFirmware3(QObject):
                     'cur_temp': 0
                 })
         except Exception as e:
-            self.err = 'Connection to {} failed. Exception returned: {}'.format(self.rrf_host, e)
-            self.sig_failure.emit()
+            self.sig_error.emit('Connection to {} failed.'.format(self.rrf_host))
+            self.sig_log_debug.emit('[RRF3] Error: Connection to {} failed. Exception returned: {}'.format(self.rrf_host, e))
+            self.sig_force_close.emit()
             return
+
+        self.sig_log_event.emit('Connected to RepRapFirmware v3 at {}'.format(self.rrf_host))
+        self.sig_log_debug.emit('[RRF3] Printer Firmware: v{} running on: {}'.format(self.cfg_board[0]['firmware'], self.cfg_board[0]['board']))
+        self.sig_log_debug.emit('[RRF3] Found {} tool(s)'.format(len(self.cfg_tools)))
+        self.fw_string = 'v{} ({})'.format(self.cfg_board[0]['firmware'], self.cfg_board[0]['board'])
 
         self.sig_connected.emit()
         self.run_thread = True
