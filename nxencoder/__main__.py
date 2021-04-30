@@ -62,6 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_heat.clicked.connect(self.printer_set_temperature)
         self.btn_tool_run.clicked.connect(self.printer_run)
         self.btn_estop.clicked.connect(self.printer_estop)
+        self.cbx_printer_fwtype.currentIndexChanged.connect(self.fwtype_update)
         self.cbx_tool.currentIndexChanged.connect(self.gui_tool_update)
         self.sig_chart_const_finished.connect(self.chart_const_finished)
         self.tabMain.currentChanged.connect(self.gui_tab_update)
@@ -154,6 +155,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
 
         self.populate_serial_ports()
+        self.cbx_printer_port.setHidden(True)
 
     def log_event(self, event):
         ''' Log text to the GUI event log. '''
@@ -203,6 +205,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for port in self.serial_ports:
             self.log_debug('[SERIAL] Found port: {} - {}'.format(port.portName(), port.description()))
             self.cbx_encoder_port.addItem('{}: {}'.format(port.portName(), port.description()))
+
+    def populate_printer_ports(self):
+        ''' Populate the printer combobox with available system serial ports.
+        Automatically omit the port used by the serial encoder if connected. '''
+        self.cbx_printer_port.clear()
+        for port in self.serial_ports:
+            self.cbx_printer_port.addItem('{}: {}'.format(port.portName(), port.description()))
+
+    def fwtype_update(self, index):
+        ''' Signalled when the firmware type combobox is altered. This allows
+        aspects of the GUI to be changed depending on the desired firmware. '''
+        if index in [3, 5]:
+            self.txt_printer_hostname.setHidden(True)
+            self.cbx_printer_port.setHidden(False)
+            self.lbl_printer_hostname_static.setText('Port')
+            self.populate_printer_ports()
+            return
+        self.txt_printer_hostname.setHidden(False)
+        self.cbx_printer_port.setHidden(True)
+        self.lbl_printer_hostname_static.setText('Host or IP')
 
     def encoder_connect(self):
         ''' Connect to the serial encoder via the SerialEncoder class. '''

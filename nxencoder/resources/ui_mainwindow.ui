@@ -301,6 +301,61 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lbl_printer_hostname_static">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Host or IP</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="layout_printer_buttons">
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="btn_printer_connect">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_printer_disconnect">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Disconnect</string>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="1">
        <widget class="QComboBox" name="cbx_printer_fwtype">
         <property name="enabled">
@@ -344,66 +399,25 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lbl_printer_hostname_static">
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Hostname</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="txt_printer_hostname">
-        <property name="font">
-         <font>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <layout class="QHBoxLayout" name="layout_printer_buttons">
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
+       <layout class="QHBoxLayout" name="layout_printer_location">
         <item>
-         <widget class="QPushButton" name="btn_printer_connect">
+         <widget class="QLineEdit" name="txt_printer_hostname">
           <property name="font">
            <font>
             <weight>50</weight>
             <bold>false</bold>
            </font>
-          </property>
-          <property name="text">
-           <string>Connect</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="btn_printer_disconnect">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         <widget class="QComboBox" name="cbx_printer_port">
           <property name="font">
            <font>
             <weight>50</weight>
             <bold>false</bold>
            </font>
-          </property>
-          <property name="text">
-           <string>Disconnect</string>
-          </property>
-          <property name="default">
-           <bool>false</bool>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
           </property>
          </widget>
         </item>
