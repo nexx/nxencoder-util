@@ -24,9 +24,9 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox
 
-from helpers.chart_consistency import ConsistencyChart
 from helpers.printer_reprapfirmware import RepRapFirmware3
 from helpers.serial_encoder import SerialEncoder
+from helpers.worker_consistency import WorkerConsistency
 from helpers.worker_esteps import WorkerEsteps
 from resources.ui_mainwindow import Ui_MainWindow
 
@@ -64,7 +64,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_estop.clicked.connect(self.printer_estop)
         self.cbx_printer_fwtype.currentIndexChanged.connect(self.fwtype_update)
         self.cbx_tool.currentIndexChanged.connect(self.gui_tool_update)
-        self.sig_chart_const_finished.connect(self.chart_const_finished)
         self.tabMain.currentChanged.connect(self.gui_tab_update)
 
         self.init_gui()
@@ -150,8 +149,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer.start()
 
-        self.chart_const = ConsistencyChart()
-        self.chart_const_widget.setChart(self.chart_const.chart)
+        self.worker_consistency = WorkerConsistency()
+        self.chart_const_widget.setChart(self.worker_consistency.chart)
         self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
 
         self.populate_serial_ports()
@@ -417,10 +416,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tabMain.setTabEnabled(0, False)
             self.tabMain.setTabEnabled(2, False)
             self.btn_tool_run.setEnabled(False)
-            self.encoder.set_relative()
-            self.encoder.start()
-            self.chart_const.reset()
-            self.printer.send_gcode('G1 E122 F120')
+            self.printer_check_consistency()
             return
         if self.tabMain.currentIndex() == 2:
             self.tabMain.setTabEnabled(0, False)
@@ -491,6 +487,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
+    def printer_check_consistency(self):
+        ''' Run a consistency loop to check the extruder. '''
+        self.log_event('Beginning extruder consistency test. Please wait whilst this completes.')
+        self.worker_consistency.moveToThread(self.thread_worker)
+        self.worker_consistency.sig_encoder_measure.connect(self.encoder.measure)
+        self.worker_consistency.sig_encoder_reset.connect(self.encoder.reset)
+        self.worker_consistency.sig_printer_send_gcode.connect(self.printer.send_gcode)
+        self.worker_consistency.sig_log_debug.connect(self.log_debug)
+        self.worker_consistency.sig_finished.connect(self.const_finished)
+        self.thread_worker.started.connect(self.worker_consistency.run)
+        self.encoder.sig_measurement.connect(self.worker_consistency.handle_measurement)
+        # FIXME: Perhaps alter the firmware to only report relative measurements
+        self.encoder.set_relative()
+        self.thread_worker.start()
+
     def esteps_finished(self):
         ''' Signalled when the esteps process has completed. We can now
         perform a report on the extruder steps. '''
@@ -501,13 +512,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread_worker.started.disconnect()
         self.working = False
 
-    def chart_const_finished(self):
+    def const_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
         now perform a report on the extruder consistency. '''
-        # TODO: Show results to user and also log to the event log
+        deviation_avg = round(sum(self.worker_consistency.cal_results) / len(self.worker_consistency.cal_results), 2)
+        self.log_event('Extruder consistency test complete!')
+        self.log_event('Average deviation: {}%'.format(deviation_avg))
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(2, True)
+        self.thread_worker.quit()
+        self.thread_worker.started.disconnect()
         self.working = False
 
     def chart_vol_finished(self):

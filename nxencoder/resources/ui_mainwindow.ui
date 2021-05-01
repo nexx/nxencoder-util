@@ -1529,19 +1529,6 @@
        <number>0</number>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
-      <property name="geometry">
-       <rect>
-        <x>630</x>
-        <y>190</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Abort</string>
-      </property>
-     </widget>
      <widget class="QGroupBox" name="groupbox_esteps_original">
       <property name="geometry">
        <rect>
