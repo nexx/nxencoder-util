@@ -262,7 +262,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.encoder.sig_log_event.connect(self.log_event)
         self.encoder.sig_log_debug.connect(self.log_debug)
         self.encoder.sig_handshake.connect(self.encoder_handshake)
-        self.encoder.sig_measurement.connect(self.encoder_measurement)
         self.encoder.sig_error.connect(self.error_critical)
         self.encoder.sig_force_close.connect(self.encoder_disconnect)
         self.sig_encoder_connect.emit()
@@ -282,27 +281,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('Connected to encoder')
         self.log_debug('[SERIAL] Encoder Firmware: v{} - Built: {}'.format(self.encoder.firmware_version, self.encoder.firmware_date))
         self.lbl_encoder_fw.setText('v{} ({})'.format(self.encoder.firmware_version, self.encoder.firmware_date))
-
-    def encoder_measurement(self, measurement):
-        ''' The encoder returned a measurement, process and update the GUI
-        with the details '''
-        self.log_debug('[SERIAL] Measurement received: {}'.format(measurement))
-        if self.tabMain.currentIndex() == 0:
-            return
-        if self.tabMain.currentIndex() == 1:
-            if measurement == 0 and self.chart_const.count != 1:
-                ''' Assume the measurement is complete. '''
-                self.encoder.stop()
-                self.sig_chart_const_finished.emit()
-                return
-            if measurement == 0 and self.chart_const.count == 1:
-                ''' Zero reading, extruder has not moved yet. '''
-                return
-
-            self.chart_const.add(measurement, self.encoder.interval)
-            return
-        if self.tabMain.currentIndex() == 2:
-            return
 
     def printer_connect(self):
         ''' Connect to the specified firmware '''
@@ -337,7 +315,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         close the connection and clean up. '''
         if self.printer is not None:
             self.printer.run_thread = False
-        print(self.printer)
         self.thread_printer.quit()
         self.thread_printer.started.disconnect()
 
