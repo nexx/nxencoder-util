@@ -376,6 +376,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.current_tool != index:
                 self.printer.set_tool_temperature(0, self.current_tool)
             self.current_tool = index
+            if self.printer.cfg_tools[index]['max_temp'] == 0:
+                self.dsbx_tool_temp.setMaximum(250)
+                return
+            self.dsbx_tool_temp.setMaximum(self.printer.cfg_tools[index]['max_temp'])
 
     def gui_tab_update(self, index):
         ''' Signalled when the user changes tab on the bottom of the

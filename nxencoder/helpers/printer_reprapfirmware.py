@@ -70,7 +70,8 @@ class RepRapFirmware3(QObject):
                     'extruder': tool['extruders'][0],
                     'heater': tool['heaters'][0],
                     'stepsPerMm': self.get_objectmodel('move.extruders[{}].stepsPerMm'.format(tool['extruders'][0])),
-                    'cur_temp': 0
+                    'cur_temp': 0,
+                    'max_temp': int(self.get_objectmodel('heat.heaters[{}].max'.format(tool['heaters'][0])))
                 })
         except Exception as e:
             self.sig_error.emit('Connection to {} failed.'.format(self.rrf_host))
