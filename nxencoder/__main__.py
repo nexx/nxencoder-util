@@ -437,13 +437,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_worker)
         self.worker_esteps.sig_encoder_measure.connect(self.encoder.measure)
-        self.worker_esteps.sig_encoder_reset.connect(self.encoder.reset)
         self.worker_esteps.sig_printer_send_gcode.connect(self.printer.send_gcode)
         self.worker_esteps.sig_log_debug.connect(self.log_debug)
         self.worker_esteps.sig_result_ready.connect(self.esteps_data_ready)
         self.worker_esteps.sig_finished.connect(self.esteps_finished)
         self.thread_worker.started.connect(self.worker_esteps.run)
         self.encoder.sig_measurement.connect(self.worker_esteps.handle_measurement)
+        # FIXME: Perhaps alter the firmware to only report relative measurements
+        self.encoder.set_relative()
         self.thread_worker.start()
 
     def esteps_data_ready(self):
@@ -455,10 +456,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         results_pct = round((results_num / 20) * 100)
         self.progress_esteps.setValue(results_pct)
 
+        # FIXME: Do sanity checking on the results. If they seem wildly inaccurate
+        # warn the user and abort rather than set an esteps value which is obviously
+        # wrong.
         if results_num <= 10:
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(results_num))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_{}'.format(results_num - 1))
             qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[results_num - 1]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(results_num))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_pct_{}'.format(results_num - 1))
             qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[results_num - 1] / self.worker_esteps.distance_coarse) * 100))
             distance_avg = sum(self.worker_esteps.cal_results[0:10]) / len(self.worker_esteps.cal_results[0:10])
             distance_pct = distance_avg / self.worker_esteps.distance_coarse
@@ -472,9 +476,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
         if results_num >= 11:
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(results_num - 10))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_{}'.format(results_num - 1))
             qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[results_num - 1]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(results_num - 10))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_pct_{}'.format(results_num - 1))
             qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[results_num - 1] / self.worker_esteps.distance_fine) * 100))
             distance_avg = sum(self.worker_esteps.cal_results[10:20]) / len((self.worker_esteps.cal_results[10:20]))
             distance_pct = distance_avg / self.worker_esteps.distance_fine
