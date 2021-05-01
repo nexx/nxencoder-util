@@ -441,6 +441,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.worker_esteps.sig_printer_send_gcode.connect(self.printer.send_gcode)
         self.worker_esteps.sig_log_debug.connect(self.log_debug)
         self.worker_esteps.sig_result_ready.connect(self.esteps_data_ready)
+        self.worker_esteps.sig_finished.connect(self.esteps_finished)
         self.thread_worker.started.connect(self.worker_esteps.run)
         self.encoder.sig_measurement.connect(self.worker_esteps.handle_measurement)
         self.thread_worker.start()
@@ -474,13 +475,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if len(self.worker_esteps.cal_results) < 11:
             return
 
-        for i in range(len(self.worker_esteps.cal_results[10:19])):
+        for i in range(len(self.worker_esteps.cal_results[10:20])):
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i + 1))
             qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i + 10]))
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i + 1))
             qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i + 10] / self.worker_esteps.distance_fine) * 100))
 
-        distance_avg = sum(self.worker_esteps.cal_results[10:19]) / len((self.worker_esteps.cal_results[10:19]))
+        distance_avg = sum(self.worker_esteps.cal_results[10:20]) / len((self.worker_esteps.cal_results[10:20]))
         distance_pct = distance_avg / self.worker_esteps.distance_fine
         self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
         self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))

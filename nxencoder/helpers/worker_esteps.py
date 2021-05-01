@@ -29,6 +29,7 @@ class WorkerEsteps(QObject):
     sig_printer_send_gcode = pyqtSignal(str)
     sig_log_debug = pyqtSignal(str)
     sig_result_ready = pyqtSignal()
+    sig_finished = pyqtsignal()
 
     distance_coarse = 20
     distance_fine = 50
@@ -67,6 +68,8 @@ class WorkerEsteps(QObject):
 
             QTimer.singleShot(500, self.loop.quit)
             self.loop.exec_()
+
+        self.sig_finished.emit()
 
     def handle_measurement(self, measurement):
         ''' Retrieve the measurements from the encoder signal, then
