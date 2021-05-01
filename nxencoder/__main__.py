@@ -455,39 +455,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         results_pct = round((results_num / 20) * 100)
         self.progress_esteps.setValue(results_pct)
 
-        for i in range(len(self.worker_esteps.cal_results[0:10])):
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(i + 1))
-            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(i + 1))
-            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i] / self.worker_esteps.distance_coarse) * 100))
+        if results_num <= 10:
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_{}'.format(results_num))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[results_num - 1]))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_coarse_pct_{}'.format(results_num))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[results_num - 1] / self.worker_esteps.distance_coarse) * 100))
+            distance_avg = sum(self.worker_esteps.cal_results[0:10]) / len(self.worker_esteps.cal_results[0:10])
+            distance_pct = distance_avg / self.worker_esteps.distance_coarse
+            self.txt_esteps_coarse_avg.setText('{:.2f} mm'.format(distance_avg))
+            self.txt_esteps_coarse_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
+            self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
 
-        distance_avg = sum(self.worker_esteps.cal_results[0:10]) / len(self.worker_esteps.cal_results[0:10])
-        distance_pct = distance_avg / self.worker_esteps.distance_coarse
-        self.txt_esteps_coarse_avg.setText('{:.2f} mm'.format(distance_avg))
-        self.txt_esteps_coarse_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
-        self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
-
-        if len(self.worker_esteps.cal_results) == 10:
+        if results_num == 10:
             self.log_event('Calculated coarse eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
-        if len(self.worker_esteps.cal_results) < 11:
-            return
+        if results_num >= 11:
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(results_num - 10))
+            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[results_num - 1]))
+            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(results_num - 10))
+            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[results_num - 1] / self.worker_esteps.distance_fine) * 100))
+            distance_avg = sum(self.worker_esteps.cal_results[10:20]) / len((self.worker_esteps.cal_results[10:20]))
+            distance_pct = distance_avg / self.worker_esteps.distance_fine
+            self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
+            self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
+            self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
 
-        for i in range(len(self.worker_esteps.cal_results[10:20])):
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_{}'.format(i + 1))
-            qle.setText('{:.2f} mm'.format(self.worker_esteps.cal_results[i + 10]))
-            qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_fine_pct_{}'.format(i + 1))
-            qle.setText('{:.2f} %'.format((self.worker_esteps.cal_results[i + 10] / self.worker_esteps.distance_fine) * 100))
-
-        distance_avg = sum(self.worker_esteps.cal_results[10:20]) / len((self.worker_esteps.cal_results[10:20]))
-        distance_pct = distance_avg / self.worker_esteps.distance_fine
-        self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
-        self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
-        self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
-
-        if len(self.worker_esteps.cal_results) == 20:
+        if results_num == 20:
             self.log_event('Calculated final eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
