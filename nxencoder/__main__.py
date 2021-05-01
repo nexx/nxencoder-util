@@ -187,6 +187,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
 
+    def results_popup(self, result):
+        ''' Show the user a messagebox with the results of the test which has
+        been run. '''
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle('Success!')
+        msg.setStandardButtons(QMessageBox.Ok)
+
+        if self.tabMain.currentIndex() == 0:
+            msg.setText('The extruder calibration completed successfully.')
+            msg.setInformativeText('The new extruder steps/mm value for tool {} has been calculated to be {}.\n\n'
+                                   'You will need to update your printers configuration to use this new value.'.format(self.current_tool, result))
+        if self.tabMain.currentIndex() == 1:
+            grade = 'an average result.'
+            if result >= -1.25 and result <= 1.25:
+                grade = 'a good result.'
+            if result >= -0.75 and result <= 0.75:
+                grade = 'a great result!'
+            if result >= -0.25 and result <= 0.25:
+                grade = 'an excellent result!'
+            msg.setText('The extruder consistency check has completed successfully.')
+            msg.setInformativeText('The extruder for tool {} has an average deviation of {}%.\n\n'
+                                   'This is {} '.format(self.current_tool, result, grade))
+        if self.tabMain.currentIndex() == 2:
+            msg.setText('NYI')
+            msg.setInformativeText('NYI')
+
+        msg.exec_()
+
     def populate_serial_ports(self):
         ''' Populate the encoder combobox with available system serial ports.
         Also called when the user hits the refresh button. '''
@@ -505,6 +534,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def esteps_finished(self):
         ''' Signalled when the esteps process has completed. We can now
         perform a report on the extruder steps. '''
+        self.results_popup(self.printer.cfg_tools[self.current_tool]['stepsPerMm'])
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(1, True)
         self.tabMain.setTabEnabled(2, True)
@@ -518,6 +548,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         deviation_avg = round(sum(self.worker_consistency.cal_results) / len(self.worker_consistency.cal_results), 2)
         self.log_event('Extruder consistency test complete!')
         self.log_event('Average deviation: {}%'.format(deviation_avg))
+        self.results_popup(deviation_avg)
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(2, True)
