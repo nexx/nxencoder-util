@@ -29,7 +29,7 @@ class WorkerEsteps(QObject):
     sig_printer_send_gcode = pyqtSignal(str)
     sig_log_debug = pyqtSignal(str)
     sig_result_ready = pyqtSignal()
-    sig_finished = pyqtsignal()
+    sig_finished = pyqtSignal()
 
     distance_coarse = 20
     distance_fine = 50
