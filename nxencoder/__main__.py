@@ -49,7 +49,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.current_tool = 0
         self.thread_printer = QThread()
-        self.thread_worker = QThread()
 
         self.actn_save.triggered.connect(self.log_save)
         self.btn_encoder_connect.clicked.connect(self.encoder_connect)
@@ -67,6 +66,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabMain.currentChanged.connect(self.gui_tab_update)
 
         self.init_gui()
+        self.init_charts()
         self.show()
         self.log_event('Logging started')
 
@@ -149,12 +149,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.addTransition(self.sig_printer_disconnect, self.state_printer_disconnected)
         self.state_printer.start()
 
+        self.populate_serial_ports()
+        self.cbx_printer_port.setHidden(True)
+
+    def init_charts(self):
+        ''' Initialise the charts in the GUI. These are handled in an odd way
+        as we need to connect the class at startup to avoid a black chart being
+        shown in the GUI. '''
         self.worker_consistency = WorkerConsistency()
         self.chart_const_widget.setChart(self.worker_consistency.chart)
         self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
-
-        self.populate_serial_ports()
-        self.cbx_printer_port.setHidden(True)
 
     def log_event(self, event):
         ''' Log text to the GUI event log. '''
@@ -436,18 +440,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.txt_esteps_original.setText(str(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
 
+        # FIXME: Perhaps alter the firmware to only report relative measurements
+        self.encoder.set_relative()
+
+        self.thread_esteps = QThread()
         self.worker_esteps = WorkerEsteps()
-        self.worker_esteps.moveToThread(self.thread_worker)
+        self.worker_esteps.moveToThread(self.thread_esteps)
+        self.thread_esteps.started.connect(self.worker_esteps.run)
         self.worker_esteps.sig_encoder_measure.connect(self.encoder.measure)
         self.worker_esteps.sig_printer_send_gcode.connect(self.printer.send_gcode)
         self.worker_esteps.sig_log_debug.connect(self.log_debug)
         self.worker_esteps.sig_result_ready.connect(self.esteps_data_ready)
         self.worker_esteps.sig_finished.connect(self.esteps_finished)
-        self.thread_worker.started.connect(self.worker_esteps.run)
+        self.worker_esteps.sig_finished.connect(self.worker_esteps.deleteLater)
+        self.worker_esteps.sig_finished.connect(self.thread_esteps.deleteLater)
         self.encoder.sig_measurement.connect(self.worker_esteps.handle_measurement)
-        # FIXME: Perhaps alter the firmware to only report relative measurements
-        self.encoder.set_relative()
-        self.thread_worker.start()
+        self.thread_esteps.start()
 
     def esteps_data_ready(self):
         ''' Signalled when the esteps calibration worker has completed an
@@ -496,32 +504,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_check_consistency(self):
         ''' Run a consistency loop to check the extruder. '''
         self.log_event('Beginning extruder consistency test. Please wait whilst this completes.')
-        self.worker_consistency.moveToThread(self.thread_worker)
+
+        # FIXME: Perhaps alter the firmware to only report relative measurements
+        self.encoder.set_relative()
+
+        self.thread_consistency = QThread()
+        self.worker_consistency = WorkerConsistency()
+        self.chart_const_widget.setChart(self.worker_consistency.chart)
+        self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
+        self.worker_consistency.moveToThread(self.thread_consistency)
+        self.thread_consistency.started.connect(self.worker_consistency.run)
         self.worker_consistency.sig_encoder_measure.connect(self.encoder.measure)
         self.worker_consistency.sig_encoder_reset.connect(self.encoder.reset)
         self.worker_consistency.sig_printer_send_gcode.connect(self.printer.send_gcode)
         self.worker_consistency.sig_log_debug.connect(self.log_debug)
         self.worker_consistency.sig_finished.connect(self.const_finished)
-        self.thread_worker.started.connect(self.worker_consistency.run)
+        self.worker_consistency.sig_finished.connect(self.worker_consistency.deleteLater)
+        self.worker_consistency.sig_finished.connect(self.thread_consistency.deleteLater)
         self.encoder.sig_measurement.connect(self.worker_consistency.handle_measurement)
-        # FIXME: Perhaps alter the firmware to only report relative measurements
-        self.encoder.set_relative()
-        self.thread_worker.start()
+        self.thread_consistency.start()
 
     def esteps_finished(self):
         ''' Signalled when the esteps process has completed. We can now
         perform a report on the extruder steps. '''
+        self.thread_esteps.quit()
+        self.thread_esteps.wait()
         self.results_popup(self.printer.cfg_tools[self.current_tool]['stepsPerMm'])
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(1, True)
         self.tabMain.setTabEnabled(2, True)
-        self.thread_worker.quit()
-        self.thread_worker.started.disconnect()
         self.working = False
 
     def const_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
         now perform a report on the extruder consistency. '''
+        self.thread_consistency.quit()
+        self.thread_consistency.wait()
+
         deviation_avg = round(sum(self.worker_consistency.cal_results) / len(self.worker_consistency.cal_results), 2)
         self.log_event('Extruder consistency test complete!')
         self.log_event('Average deviation: {}%'.format(deviation_avg))
@@ -529,8 +548,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(2, True)
-        self.thread_worker.quit()
-        self.thread_worker.started.disconnect()
         self.working = False
 
     def chart_vol_finished(self):
