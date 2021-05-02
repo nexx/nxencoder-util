@@ -28,6 +28,7 @@ from helpers.printer_reprapfirmware import RepRapFirmware3
 from helpers.serial_encoder import SerialEncoder
 from helpers.worker_consistency import WorkerConsistency
 from helpers.worker_esteps import WorkerEsteps
+from helpers.worker_volumetric import WorkerVolumetric
 from resources.ui_mainwindow import Ui_MainWindow
 
 import time
@@ -160,6 +161,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.chart_const_widget.setChart(self.worker_consistency.chart)
         self.chart_const_widget.setRenderHint(QPainter.Antialiasing)
 
+        self.worker_volumetric = WorkerVolumetric()
+        self.chart_vcal_widget.setChart(self.worker_volumetric.chart)
+        self.chart_vcal_widget.setRenderHint(QPainter.Antialiasing)
+
     def log_event(self, event):
         ''' Log text to the GUI event log. '''
         self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), event))
@@ -215,9 +220,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             msg.setInformativeText('The extruder for tool {} has an average deviation of {}%.\n\n'
                                    'This is {} '.format(self.current_tool, result, grade))
         if self.tabMain.currentIndex() == 2:
-            msg.setText('NYI')
-            msg.setInformativeText('NYI')
-
+            msg.setText('The maximum volumetric flow calculation completed successfully.')
+            msg.setInformativeText('The maximum volumetric flow for tool {}, using the currently loaded filament, at {}C has been calculated to be {}mm\u00b3/s.'
+                                   .format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], result))
         msg.exec_()
 
     def populate_serial_ports(self):
@@ -431,6 +436,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.tabMain.currentIndex() == 2:
             self.tabMain.setTabEnabled(0, False)
             self.tabMain.setTabEnabled(1, False)
+            self.btn_tool_run.setEnabled(False)
+            self.printer_volumetric_calc()
             return
 
     def printer_calibrate_esteps(self):
@@ -524,6 +531,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.encoder.sig_measurement.connect(self.worker_consistency.handle_measurement)
         self.thread_consistency.start()
 
+    def printer_volumetric_calc(self):
+        ''' Calculate the maximum volumetric flow. '''
+        self.log_event('Beginning maximum volumetric flow calculation. Please wait whilst this completes.')
+
+        # FIXME: Perhaps alter the firmware to only report relative measurements
+        self.encoder.set_relative()
+
+        self.thread_volumetric = QThread()
+        self.worker_volumetric = WorkerVolumetric()
+        self.chart_vcal_widget.setChart(self.worker_volumetric.chart)
+        self.chart_vcal_widget.setRenderHint(QPainter.Antialiasing)
+        self.worker_volumetric.moveToThread(self.thread_volumetric)
+        self.thread_volumetric.started.connect(self.worker_volumetric.run)
+        self.worker_volumetric.sig_encoder_measure.connect(self.encoder.measure)
+        self.worker_volumetric.sig_encoder_reset.connect(self.encoder.reset)
+        self.worker_volumetric.sig_printer_send_gcode.connect(self.printer.send_gcode)
+        self.worker_volumetric.sig_log_debug.connect(self.log_debug)
+        self.worker_volumetric.sig_finished.connect(self.volumetric_finished)
+        self.worker_volumetric.sig_finished.connect(self.worker_volumetric.deleteLater)
+        self.worker_volumetric.sig_finished.connect(self.thread_volumetric.deleteLater)
+        self.encoder.sig_measurement.connect(self.worker_volumetric.handle_measurement)
+        self.thread_volumetric.start()
+
     def esteps_finished(self):
         ''' Signalled when the esteps process has completed. We can now
         perform a report on the extruder steps. '''
@@ -550,9 +580,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabMain.setTabEnabled(2, True)
         self.working = False
 
-    def chart_vol_finished(self):
+    def volumetric_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
         now perform a report on the maximum volumetric throughput. '''
+        self.thread_volumetric.quit()
+        self.thread_volumetric.wait()
+        self.log_event('Maximum volumetric flow calculation complete!')
+        self.log_event('The maximum flow for tool {} at {}C is {}mm\u00b3/s.'.format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], self.worker_volumetric.max_volumetric))
+        self.results_popup(self.worker_volumetric.max_volumetric)
         self.btn_tool_run.setEnabled(True)
         self.tabMain.setTabEnabled(0, True)
         self.tabMain.setTabEnabled(1, True)
