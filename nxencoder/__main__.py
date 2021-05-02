@@ -236,8 +236,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                    'This is {} '.format(self.current_tool, result, grade))
         if self.tabMain.currentIndex() == 2:
             msg.setText('The maximum volumetric flow calculation completed successfully.')
-            msg.setInformativeText('The maximum volumetric flow for tool {}, using the currently loaded filament, at {}C has been calculated to be {}mm\u00b3/s.'
-                                   .format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], result))
+            msg.setInformativeText('The maximum volumetric flow for tool {} is {}mm\u00b3/s.\n\n'
+                                   'This was calculated using the currently loaded filament, a filament diameter of {}, a nozzle size of {}, and an extrusion temperature of {}C.\n\n'
+                                   'Differing filaments, temperatures, and nozzle sizes, can all affect the maximum volumetric flow of the extruder and hotend.'
+                                   .format(self.current_tool, result, self.cbox_tool_filament.currentText(), round(self.dsbx_tool_nozzle.value(), 2), self.printer.cfg_tools[self.current_tool]['cur_temp']))
         msg.exec_()
 
     def populate_serial_ports(self):
@@ -554,6 +556,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.worker_volumetric.sig_encoder_reset.connect(self.encoder.reset)
         self.worker_volumetric.sig_printer_send_gcode.connect(self.printer.send_gcode)
         self.worker_volumetric.sig_log_debug.connect(self.log_debug)
+        self.worker_volumetric.sig_log_event.connect(self.log_event)
         self.worker_volumetric.sig_finished.connect(self.volumetric_finished)
         self.worker_volumetric.sig_finished.connect(self.worker_volumetric.deleteLater)
         self.worker_volumetric.sig_finished.connect(self.thread_volumetric.deleteLater)
@@ -585,11 +588,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def volumetric_finished(self):
         ''' Signalled when the readings for the chart have completed. We can
         now perform a report on the maximum volumetric throughput. '''
+        filament_dia = float(self.cbox_tool_filament.currentText())
+        cu_mm_per_mm = ((filament_dia / 2) ** 2) * 3.14159
+        max_volumetric = (self.worker_volumetric.feedrate / 60) * cu_mm_per_mm
+        max_volumetric = round(max_volumetric - 0.5, 2)
+
         self.thread_volumetric.quit()
         self.thread_volumetric.wait()
         self.log_event('Maximum volumetric flow calculation complete!')
-        self.log_event('The maximum flow for tool {} at {}C is {}mm\u00b3/s.'.format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], self.worker_volumetric.max_volumetric))
-        self.results_popup(self.worker_volumetric.max_volumetric)
+        self.log_event('The maximum flow for tool {} at {}C is {} mm\u00b3/s'.format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], max_volumetric))
+        self.results_popup(max_volumetric)
         self.gui_settings_enabled(True)
         self.working = False
 
