@@ -232,7 +232,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if result >= -0.25 and result <= 0.25:
                 grade = 'an excellent result!'
             msg.setText('The extruder consistency check has completed successfully.')
-            msg.setInformativeText('The extruder for tool {} has an average deviation of {}%.\n\n'
+            msg.setInformativeText('The extruder for tool {} has an average deviation of {:.2f}%.\n\n'
                                    'This is {} '.format(self.current_tool, result, grade))
         if self.tabMain.currentIndex() == 2:
             msg.setText('The maximum volumetric flow calculation completed successfully.')
@@ -375,7 +375,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.working:
             return
         if tool != self.current_tool:
-            self.log_event('WARNING: Tool {} is at temperature, but it is not the active tool. Setting its temperature to 0C.'.format(tool))
+            self.log_event('WARNING: Tool {} is at temperature, but it is not the active tool. Setting its temperature to 0C'.format(tool))
             self.printer.set_tool_temperature(0, tool)
             return
         self.btn_tool_heat.setEnabled(True)
@@ -541,7 +541,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def printer_volumetric_calc(self):
         ''' Calculate the maximum volumetric flow. '''
-        self.log_event('Beginning maximum volumetric flow calculation. Please wait whilst this completes.')
+        self.log_event('Beginning maximum volumetric flow calculation. Please wait whilst this completes')
 
         # FIXME: Perhaps alter the firmware to only report relative measurements
         self.encoder.set_relative()
@@ -580,7 +580,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         deviation_avg = round(sum(self.worker_consistency.cal_results) / len(self.worker_consistency.cal_results), 2)
         self.log_event('Extruder consistency test complete!')
-        self.log_event('Average deviation: {}%'.format(deviation_avg))
+        self.log_event('Average deviation: {:.2f}%'.format(deviation_avg))
         self.results_popup(deviation_avg)
         self.gui_settings_enabled(True)
         self.working = False
