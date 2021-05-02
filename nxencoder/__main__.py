@@ -165,6 +165,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.chart_vcal_widget.setChart(self.worker_volumetric.chart)
         self.chart_vcal_widget.setRenderHint(QPainter.Antialiasing)
 
+    def gui_settings_enabled(self, is_enabled):
+        ''' Used to enable and disable various widgets which the user should not
+        change during a running process. '''
+        for i in range(self.tabMain.count()):
+            if i != self.tabMain.currentIndex():
+                self.tabMain.setTabEnabled(i, is_enabled)
+        self.cbx_tool.setEnabled(is_enabled)
+        self.dsbx_tool_nozzle.setEnabled(is_enabled)
+        self.cbox_tool_filament.setEnabled(is_enabled)
+        self.dsbx_tool_temp.setEnabled(is_enabled)
+        self.btn_tool_home.setEnabled(is_enabled)
+        self.btn_tool_center.setEnabled(is_enabled)
+        self.btn_tool_heat.setEnabled(is_enabled)
+        self.btn_tool_run.setEnabled(is_enabled)
+
     def log_event(self, event):
         ''' Log text to the GUI event log. '''
         self.pte_eventlog.appendPlainText('[{}] {}'.format(time.strftime('%H:%M:%S', time.localtime()), event))
@@ -420,23 +435,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' Triggered when the run button is pressed. We determine the correct
         test to run based upon tabMain.currentIndex(). '''
         self.working = True
+        self.gui_settings_enabled(False)
         if self.tabMain.currentIndex() == 0:
-            self.tabMain.setTabEnabled(1, False)
-            self.tabMain.setTabEnabled(2, False)
-            self.btn_tool_run.setEnabled(False)
-            self.encoder.set_absolute()
             self.printer_calibrate_esteps()
             return
         if self.tabMain.currentIndex() == 1:
-            self.tabMain.setTabEnabled(0, False)
-            self.tabMain.setTabEnabled(2, False)
-            self.btn_tool_run.setEnabled(False)
             self.printer_check_consistency()
             return
         if self.tabMain.currentIndex() == 2:
-            self.tabMain.setTabEnabled(0, False)
-            self.tabMain.setTabEnabled(1, False)
-            self.btn_tool_run.setEnabled(False)
             self.printer_volumetric_calc()
             return
 
@@ -560,9 +566,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread_esteps.quit()
         self.thread_esteps.wait()
         self.results_popup(self.printer.cfg_tools[self.current_tool]['stepsPerMm'])
-        self.btn_tool_run.setEnabled(True)
-        self.tabMain.setTabEnabled(1, True)
-        self.tabMain.setTabEnabled(2, True)
+        self.gui_settings_enabled(True)
         self.working = False
 
     def const_finished(self):
@@ -575,9 +579,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('Extruder consistency test complete!')
         self.log_event('Average deviation: {}%'.format(deviation_avg))
         self.results_popup(deviation_avg)
-        self.btn_tool_run.setEnabled(True)
-        self.tabMain.setTabEnabled(0, True)
-        self.tabMain.setTabEnabled(2, True)
+        self.gui_settings_enabled(True)
         self.working = False
 
     def volumetric_finished(self):
@@ -588,9 +590,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('Maximum volumetric flow calculation complete!')
         self.log_event('The maximum flow for tool {} at {}C is {}mm\u00b3/s.'.format(self.current_tool, self.printer.cfg_tools[self.current_tool]['cur_temp'], self.worker_volumetric.max_volumetric))
         self.results_popup(self.worker_volumetric.max_volumetric)
-        self.btn_tool_run.setEnabled(True)
-        self.tabMain.setTabEnabled(0, True)
-        self.tabMain.setTabEnabled(1, True)
+        self.gui_settings_enabled(True)
         self.working = False
 
 
