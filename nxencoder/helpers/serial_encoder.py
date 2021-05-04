@@ -64,15 +64,13 @@ class SerialEncoder(QObject):
                 self.sig_measurement.emit(float(data))
             except ValueError:
                 if data[:3] == 'NXE':
-                    _, self.firmware_version, self.firmware_date, self.interval, self.calibration = data.strip().split('|')
-                    self.interval = int(self.interval)
+                    _, self.firmware_version, self.firmware_date, self.calibration = data.strip().split('|')
                     self.sig_handshake.emit()
                     return
                 self.sig_log_event.emit('Warning: Invalid data received from encoder. Raw: {}'.format(raw_data))
 
     def disconnect(self):
         ''' Disconnect from the serial port. '''
-        self.stop()
         self.encoder.close()
 
     def error(self, error):
@@ -87,27 +85,6 @@ class SerialEncoder(QObject):
     def measure(self):
         ''' Make the arduino report a measurement now. '''
         self.encoder.write('MEASURE\n'.encode())
-
-    def set_absolute(self):
-        ''' Make the arduino report absolute measurements '''
-        self.encoder.write('ABS\n'.encode())
-
-    def set_relative(self):
-        ''' Make the arduino report relative measurements '''
-        self.encoder.write('REL\n'.encode())
-
-    def set_interval(self, interval):
-        ''' Adjust the reporting interval from the arduino '''
-        self.interval = int(interval)
-        self.encoder.write('INTERVAL {}\n'.format(interval).encode())
-
-    def start(self):
-        ''' Starts continuous reporting from the arduino '''
-        self.encoder.write('START\n'.encode())
-
-    def stop(self):
-        ''' Stops the arduino reporting '''
-        self.encoder.write('STOP\n'.encode())
 
     def reset(self):
         ''' Resets any acumulated value the arduino is tracking. '''

@@ -454,10 +454,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i.clear()
 
         self.txt_esteps_original.setText(str(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
-
-        # FIXME: Perhaps alter the firmware to only report relative measurements
-        self.encoder.set_relative()
-
         self.thread_esteps = QThread()
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_esteps)
@@ -519,10 +515,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_check_consistency(self):
         ''' Run a consistency loop to check the extruder. '''
         self.log_event('Beginning extruder consistency test. Please wait whilst this completes.')
-
-        # FIXME: Perhaps alter the firmware to only report relative measurements
-        self.encoder.set_relative()
-
         self.thread_consistency = QThread()
         self.worker_consistency = WorkerConsistency()
         self.chart_const_widget.setChart(self.worker_consistency.chart)
@@ -542,10 +534,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def printer_volumetric_calc(self):
         ''' Calculate the maximum volumetric flow. '''
         self.log_event('Beginning maximum volumetric flow calculation. Please wait whilst this completes')
-
-        # FIXME: Perhaps alter the firmware to only report relative measurements
-        self.encoder.set_relative()
-
         self.thread_volumetric = QThread()
         self.worker_volumetric = WorkerVolumetric()
         self.chart_vcal_widget.setChart(self.worker_volumetric.chart)
