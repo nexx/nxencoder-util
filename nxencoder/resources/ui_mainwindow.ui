@@ -358,9 +358,6 @@
       </item>
       <item row="2" column="1">
        <widget class="QComboBox" name="cbx_printer_fwtype">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="font">
          <font>
           <weight>50</weight>
@@ -369,32 +366,17 @@
         </property>
         <item>
          <property name="text">
-          <string>RepRapFirmware v3 - (Standalone Mode)</string>
+          <string>RepRapFirmware v3 - Standalone mode</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>RepRapFirmware v3 - (SBC Mode)</string>
+          <string>RepRapFirmware v3 - via SBC</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>RepRapFirmware v2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Marlin - (Serial Connection)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Marlin - (via OctoPrint)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Klipper</string>
+          <string>Klipper - via Moonraker</string>
          </property>
         </item>
        </widget>

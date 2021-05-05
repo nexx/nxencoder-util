@@ -24,6 +24,7 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox
 
+from helpers.printer_klipper import Klipper
 from helpers.printer_reprapfirmware import RepRapFirmware3
 from helpers.serial_encoder import SerialEncoder
 from helpers.worker_consistency import WorkerConsistency
@@ -270,12 +271,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def fwtype_update(self, index):
         ''' Signalled when the firmware type combobox is altered. This allows
         aspects of the GUI to be changed depending on the desired firmware. '''
-        if index in [3, 5]:
-            self.txt_printer_hostname.setHidden(True)
-            self.cbx_printer_port.setHidden(False)
-            self.lbl_printer_hostname_static.setText('Port')
-            self.populate_printer_ports()
-            return
+        # if index in [3, 5]:
+        #     self.txt_printer_hostname.setHidden(True)
+        #     self.cbx_printer_port.setHidden(False)
+        #     self.lbl_printer_hostname_static.setText('Port')
+        #     self.populate_printer_ports()
+        #     return
         self.txt_printer_hostname.setHidden(False)
         self.cbx_printer_port.setHidden(True)
         self.lbl_printer_hostname_static.setText('Host or IP')
@@ -313,6 +314,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
         if self.cbx_printer_fwtype.currentIndex() == 0:
             self.printer = RepRapFirmware3(self.txt_printer_hostname.text())
+        if self.cbx_printer_fwtype.currentIndex() == 2:
+            self.printer = Klipper(self.txt_printer_hostname.text())
 
         self.printer.moveToThread(self.thread_printer)
         self.thread_printer.started.connect(self.printer.run)
