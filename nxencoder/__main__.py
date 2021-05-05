@@ -354,8 +354,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.printer is None:
             return
         tool_data = self.printer.cfg_tools[self.current_tool]
-        self.txt_tool_curstep.setText('{}'.format(tool_data['stepsPerMm']))
         self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
+        self.txt_tool_curstep.setText('{:.6f}'.format(tool_data['stepsPerMm']))
 
         if self.printer.homed and not self.working:
             self.btn_tool_center.setEnabled(True)
@@ -453,7 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in self.tab_esteps.findChildren(QLineEdit):
             i.clear()
 
-        self.txt_esteps_original.setText(str(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
+        self.txt_esteps_original.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
         self.thread_esteps = QThread()
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_esteps)
