@@ -1585,6 +1585,80 @@
        </property>
       </widget>
      </widget>
+     <widget class="QGroupBox" name="groupbox_esteps_klipper_results">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>90</y>
+        <width>251</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Calculated rotation distance</string>
+      </property>
+      <widget class="QLineEdit" name="txt_esteps_klipper_calculated">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>231</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupbox_esteps_klipper_original">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>10</y>
+        <width>251</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Original rotation distance</string>
+      </property>
+      <widget class="QLineEdit" name="txt_esteps_klipper_original">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>231</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_consistency">
      <attribute name="title">
@@ -1606,6 +1680,21 @@
       <string>Volumetric Flow Calculation</string>
      </attribute>
      <widget class="QChartView" name="chart_vcal_widget">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>5</y>
+        <width>796</width>
+        <height>381</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_nle">
+     <attribute name="title">
+      <string>Non-linear Extrusion</string>
+     </attribute>
+     <widget class="QChartView" name="chart_nle_widget">
       <property name="geometry">
        <rect>
         <x>5</x>
@@ -1761,14 +1850,14 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="lbl_tool_temperature_static">
+       <widget class="QLabel" name="lbl_tool_esteps_static">
         <property name="text">
          <string>Extruder steps/mm</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="lbl_tool_curstep_static">
+       <widget class="QLabel" name="lbl_tool_settemp_static">
         <property name="text">
          <string>Temperature (Set)</string>
         </property>
