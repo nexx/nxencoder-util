@@ -109,10 +109,10 @@ class Klipper(QObject):
             # self.idle = True if status_json['status'] == 'I' else False
 
             for tool, data in enumerate(self.cfg_tools):
-                extruder_temp = json.loads(requests.get(self.address + '/server/temperature_store').text)['result'][data['name']]['temperatures']
-                self.cfg_tools[tool]['cur_temp'] = extruder_temp[len(extruder_temp) - 1]
-            #     if status_json['active'][data['heater']] != 0 and status_json['heaters'][data['heater']] >= status_json['active'][data['heater']]:
-            #         self.sig_temp_reached.emit(tool)
+                extruder = self.get_objectmodel(self.cfg_tools[tool]['name'])
+                self.cfg_tools[tool]['cur_temp'] = round(extruder['temperature'], 2)
+                if extruder['target'] != 0 and extruder['temperature'] >= extruder['target']:
+                    self.sig_temp_reached.emit(tool)
             self.sig_data_update.emit()
             QTimer.singleShot(1000, self.loop.quit)
             self.loop.exec_()
