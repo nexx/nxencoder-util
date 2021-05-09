@@ -101,12 +101,9 @@ class Klipper(QObject):
         faster, and causes less load on RRF, than querying the object
         model. '''
         while self.run_thread:
-            # status_json = json.loads(requests.get(self.rrf_address + '/rr_status').text)
 
-            # ''' If the sum of the homed json equals the len, all axes are
-            # reporting 1 as their status, meaning they are homed. '''
-            # self.homed = True if sum(status_json['homed']) == len(status_json['homed']) else False
-            # self.idle = True if status_json['status'] == 'I' else False
+            self.homed = True if len(self.get_objectmodel('toolhead')['homed_axes']) >= 3 else False
+            self.idle = True if self.get_objectmodel('print_stats')['state'] == 'standby' else False
 
             for tool, data in enumerate(self.cfg_tools):
                 extruder = self.get_objectmodel(self.cfg_tools[tool]['name'])
