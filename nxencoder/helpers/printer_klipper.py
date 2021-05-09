@@ -91,6 +91,8 @@ class Klipper(QObject):
         self.sig_log_debug.emit('[KLIPPER] Printer Firmware: {}'.format(self.cfg_board[0]['firmware']))
         self.sig_log_debug.emit('[KLIPPER] Found {} tool(s)'.format(len(self.cfg_tools)))
         self.fw_string = 'Klipper {}'.format(self.cfg_board[0]['firmware'])
+        self.sig_log_event.emit('Switching to relative extrusion mode.')
+        self.send_gcode('M83')
 
         self.sig_connected.emit()
         self.run_thread = True
