@@ -148,6 +148,17 @@ class Klipper(QObject):
         ''' Transmit gcode to the printer via the HTTP interface. '''
         requests.get(self.address + '/printer/gcode/script?', {'script': gcode})
 
+    def get_tool_stepdistance(self, tool):
+        ''' Query Klipper directly for the current tool step distance. '''
+        requests.get(self.address + '/printer/gcode/script?', {'script': 'SET_EXTRUDER_STEP_DISTANCE EXTRUDER={}'.format(tool)})
+        r = requests.get(self.address + '/server/gcode_store?count=1')
+        __, *__, step_distance = json.loads(r.text)['result']['gcode_store'][0]['message'].split()
+        try:
+            step_distance = float(step_distance)
+            return step_distance
+        except ValueError:
+            return False
+
     def get_objectmodel(self, key=''):
         ''' Read the object model, returning a json object containing
         the resulting data. '''
