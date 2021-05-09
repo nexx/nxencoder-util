@@ -122,14 +122,20 @@ class WorkerVolumetric(QObject):
         self.sig_log_event.emit('The result for {} mm/min is {:.2f}% of under-extrusion'.format(self.feedrate, self.under_extrusion))
         self.add(self.under_extrusion)
 
+        if self.under_extrusion >= 4 and not self.fine:
+            ''' We've exceeded the final under_extrusion limit without starting
+            fine tuning. Back off to the last data point and start the fine
+            tuning process from there. '''
+            self.feedrate -= 20
+
         if self.under_extrusion >= 2 and not self.fine:
             self.fine = True
             self.feedrate -= 30
             self.feedrate_step = 10
-            self.sig_log_event.emit('We are approaching flow limit. Now proceeding with fine tuning beginning at {} mm/min'.format(self.feedrate))
+            self.sig_log_event.emit('We are approaching the flow limit of this tool. Now proceeding with fine tuning beginning at {} mm/min'.format(self.feedrate))
             return
 
-        if self.under_extrusion >= 3 and self.fine:
+        if self.under_extrusion >= 4 and self.fine:
             self.feedrate -= self.feedrate_step
             self.feedrate -= 5
             self.running = False
