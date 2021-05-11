@@ -525,7 +525,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.log_event('Calculated coarse rotation_distance: {:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
 
             current_tool_esteps = current_tool_esteps / distance_pct
-            self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
+            self.printer.set_tool_esteps(current_tool_esteps)
 
         if results_num >= 11:
             qle = self.tab_esteps.findChild(QLineEdit, 'txt_esteps_{}'.format(results_num - 1))
@@ -546,7 +546,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.log_event('Calculated final rotation_distance: {:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
                 
             current_tool_esteps = current_tool_esteps / distance_pct
-            self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
+            self.printer.set_tool_esteps(current_tool_esteps)
 
     def printer_check_consistency(self):
         ''' Run a consistency loop to check the extruder. '''
