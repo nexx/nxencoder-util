@@ -45,6 +45,7 @@ class Klipper(QObject):
         self.cfg_tools = []
         self.cfg_board = []
         self.run_thread = False
+        self.isKlipper = True
 
     def run(self):
         ''' Main thread used for connection, thruough to retrieving
@@ -64,7 +65,7 @@ class Klipper(QObject):
             })
 
             self.cfg_tools.clear()
-            cfg_json = self.get_objectmodel('configfile')['config']
+            cfg_json = self.get_objectmodel('configfile')['settings']
 
             for i in range((sum(1 for x in cfg_json if x.startswith('extruder')))):
                 if i == 0:
@@ -74,10 +75,10 @@ class Klipper(QObject):
 
                 self.cfg_tools.append({
                     'name': tool,
-                    'microstepping': cfg_json[tool]['microsteps'],
-                    'stepsPerMm': ((200 * int(cfg_json[tool]['microsteps'])) / float(cfg_json[tool]['rotation_distance'])),
-                    'stepDistance': 1 / ((200 * int(cfg_json[tool]['microsteps'])) / float(cfg_json[tool]['rotation_distance'])),
-                    'rotationDistance': float(cfg_json[tool]['rotation_distance']),
+                    'rotation_distance': float(cfg_json[tool]['rotation_distance']),
+                    'full_steps_per_rotation': int(cfg_json[tool]['full_steps_per_rotation']),
+                    'microsteps': int(cfg_json[tool]['microsteps']),
+                    'stepsPerMm': round((int(cfg_json[tool]['full_steps_per_rotation']) * int(cfg_json[tool]['microsteps'])) / float(cfg_json[tool]['rotation_distance']), 6),
                     'cur_temp': 0,
                     'max_temp': int(cfg_json[tool]['max_temp'])
                 })
@@ -167,11 +168,11 @@ class Klipper(QObject):
         self.send_gcode('M104 S{} T{}'.format(temp, tool))
 
     def set_tool_esteps(self, esteps, tool=0):
-        ''' Change the esteps of the extruder configured to the
-        specified tool. Internally update our configuration with
-        the new value as well. '''
-        self.cfg_tools[tool]['stepsPerMm'] = float(esteps)
-        self.cfg_tools[tool]['stepDistance'] = 1 / esteps
-        self.cfg_tools[tool]['rotationDistance'] = (200 * self.cfg_tools[tool]['microsteps']) / esteps
-        gcode = 'SET_EXTRUDER_STEP_DISTANCE EXTRUDER={} DISTANCE={}'.format(self.cfg_tools[tool]['name'], self.cfg_tools[tool]['stepDistance'])
-        self.send_gcode(gcode)
+        ''' Klipper does not configure the extruder by esteps. Changing the
+        extruder distance value at runtime requires jumping through some hoops,
+        but we maintain this function name regardless to keep the other code clean. '''
+        step_distance = round(1 / esteps, 6)
+        self.cfg_tools[tool]['stepsPerMm'] = esteps
+        self.cfg_tools[tool]['rotation_distance'] = round((self.cfg_tools[tool]['full_steps_per_rotation'] * self.cfg_tools[tool]['microsteps']) / esteps, 6)
+        self.sig_log_debug.emit('[KLIPPER] Setting step distance of {} to {}'.format(self.cfg_tools[tool]['name'], step_distance))
+        self.send_gcode('SET_EXTRUDER_STEP_DISTANCE EXTRUDER={} DISTANCE={}'.format(self.cfg_tools[tool]['name'], step_distance))
