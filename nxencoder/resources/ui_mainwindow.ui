@@ -478,7 +478,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Coarse Calibration</string>
+       <string>Coarse Calibration (20mm distance)</string>
       </property>
       <widget class="QWidget" name="gridLayoutWidget_3">
        <property name="geometry">
@@ -993,7 +993,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Fine Calibration</string>
+       <string>Fine Calibration (50mm distance)</string>
       </property>
       <widget class="QWidget" name="gridLayoutWidget">
        <property name="geometry">
@@ -1589,7 +1589,7 @@
       <property name="geometry">
        <rect>
         <x>550</x>
-        <y>90</y>
+        <y>270</y>
         <width>251</width>
         <height>71</height>
        </rect>
@@ -1626,7 +1626,7 @@
       <property name="geometry">
        <rect>
         <x>550</x>
-        <y>10</y>
+        <y>190</y>
         <width>251</width>
         <height>71</height>
        </rect>
