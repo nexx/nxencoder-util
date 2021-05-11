@@ -225,8 +225,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.tabMain.currentIndex() == 0:
             msg.setText('The extruder calibration completed successfully.')
-            msg.setInformativeText('The new extruder steps/mm value for tool {} has been calculated to be {}.\n\n'
-                                   'You will need to update your printers configuration to use this new value.'.format(self.current_tool, result))
+            if hasattr(self.printer, 'isKlipper'):
+                msg.setInformativeText('The new rotation_distance value for extruder {} has been calculated to be {:.6f}.\n\n'
+                                       'You will need to update your printers configuration to use this new value.'.format(self.printer.cfg_tools[self.current_tool]['name'], result))
+            else:
+                msg.setInformativeText('The new extruder steps/mm value for tool {} has been calculated to be {:.2f}.\n\n'
+                                       'You will need to update your printers configuration to use this new value.'.format(self.current_tool, result))
         if self.tabMain.currentIndex() == 1:
             grade = 'an average result.'
             if result >= -1.25 and result <= 1.25:
@@ -274,6 +278,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def fwtype_update(self, index):
         ''' Signalled when the firmware type combobox is altered. This allows
         aspects of the GUI to be changed depending on the desired firmware. '''
+        self.groupbox_esteps_klipper_original.setVisible(False)
+        self.groupbox_esteps_klipper_results.setVisible(False)
+        self.lbl_tool_esteps_static.setText('Extruder steps/mm')
+
+        if index == 2:
+            self.groupbox_esteps_klipper_original.setVisible(True)
+            self.groupbox_esteps_klipper_results.setVisible(True)
+            self.lbl_tool_esteps_static.setText('Rotation Distance')
+            return
+
         # if index in [3, 5]:
         #     self.txt_printer_hostname.setHidden(True)
         #     self.cbx_printer_port.setHidden(False)
@@ -361,7 +375,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         tool_data = self.printer.cfg_tools[self.current_tool]
         self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
-        self.txt_tool_curstep.setText('{:.6f}'.format(tool_data['stepsPerMm']))
+
+        if hasattr(self.printer, 'isKlipper'):
+            self.txt_tool_curstep.setText('{:.6f}'.format(tool_data['rotation_distance']))
+        else:
+            self.txt_tool_curstep.setText('{:.2f}'.format(tool_data['stepsPerMm']))
 
         if self.printer.homed and not self.working:
             self.btn_tool_center.setEnabled(True)
@@ -460,6 +478,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i.clear()
 
         self.txt_esteps_original.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
+        if hasattr(self.printer, 'isKlipper'):
+            self.txt_esteps_klipper_original.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance']))
         self.thread_esteps = QThread()
         self.worker_esteps = WorkerEsteps()
         self.worker_esteps.moveToThread(self.thread_esteps)
@@ -496,9 +516,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.txt_esteps_coarse_avg.setText('{:.2f} mm'.format(distance_avg))
             self.txt_esteps_coarse_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
             self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+            if hasattr(self.printer, 'isKlipper'):
+                self.txt_esteps_klipper_calculated.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
 
         if results_num == 10:
             self.log_event('Calculated coarse eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
+            if hasattr(self.printer, 'isKlipper'):
+                self.log_event('Calculated coarse rotation_distance: {:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
+
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
@@ -512,9 +537,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.txt_esteps_fine_avg.setText('{:.2f} mm'.format(distance_avg))
             self.txt_esteps_fine_pct_avg.setText('{:.2f} %'.format(distance_pct * 100))
             self.txt_esteps_calculated.setText('{:.2f}'.format(current_tool_esteps / distance_pct))
+            if hasattr(self.printer, 'isKlipper'):
+                self.txt_esteps_klipper_calculated.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
 
         if results_num == 20:
             self.log_event('Calculated final eSteps: {:.2f}'.format(current_tool_esteps / distance_pct))
+            if hasattr(self.printer, 'isKlipper'):
+                self.log_event('Calculated final rotation_distance: {:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance'] * distance_pct))
+                
             current_tool_esteps = current_tool_esteps / distance_pct
             self.printer.set_tool_esteps('{:.2f}'.format(current_tool_esteps))
 
@@ -562,7 +592,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         perform a report on the extruder steps. '''
         self.thread_esteps.quit()
         self.thread_esteps.wait()
-        self.results_popup(self.printer.cfg_tools[self.current_tool]['stepsPerMm'])
+        if hasattr(self.printer, 'isKlipper'):
+            self.results_popup(self.printer.cfg_tools[self.current_tool]['rotation_distance'])
+        else:
+            self.results_popup(self.printer.cfg_tools[self.current_tool]['stepsPerMm'])
         self.gui_settings_enabled(True)
         self.working = False
 
