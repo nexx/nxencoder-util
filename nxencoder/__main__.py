@@ -123,6 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_disconnected.assignProperty(self.lbl_printer_fw, 'text', 'N/A')
         self.state_printer_disconnected.assignProperty(self.txt_printer_hostname, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_connect, 'enabled', True)
+        self.state_printer_disconnected.assignProperty(self.cbx_printer_fwtype, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_disconnect, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.tabMain, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.cbx_tool, 'enabled', False)
@@ -133,6 +134,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connecting.assignProperty(self.lbl_printer_fw, 'text', 'N/A')
         self.state_printer_connecting.assignProperty(self.txt_printer_hostname, 'enabled', False)
         self.state_printer_connecting.assignProperty(self.btn_printer_connect, 'enabled', False)
+        self.state_printer_connecting.assignProperty(self.cbx_printer_fwtype, 'enabled', False)
         self.state_printer_connecting.assignProperty(self.btn_printer_disconnect, 'enabled', False)
 
         self.state_printer_connected = QState(self.state_printer)
@@ -140,6 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.assignProperty(self.lbl_printer_status, 'styleSheet', 'color: rgb(0, 170, 0)')
         self.state_printer_connected.assignProperty(self.txt_printer_hostname, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_connect, 'enabled', False)
+        self.state_printer_connected.assignProperty(self.cbx_printer_fwtype, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_disconnect, 'enabled', True)
         self.state_printer_connected.assignProperty(self.tabMain, 'enabled', True)
         self.state_printer_connected.assignProperty(self.cbx_tool, 'enabled', True)
