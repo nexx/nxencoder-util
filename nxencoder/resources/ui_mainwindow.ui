@@ -1690,21 +1690,6 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_nle">
-     <attribute name="title">
-      <string>Non-linear Extrusion</string>
-     </attribute>
-     <widget class="QChartView" name="chart_nle_widget">
-      <property name="geometry">
-       <rect>
-        <x>5</x>
-        <y>5</y>
-        <width>796</width>
-        <height>381</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="groupbox_settings">
     <property name="enabled">
