@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>About</class>
+ <widget class="QDialog" name="About">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>461</width>
+    <height>221</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>461</width>
+    <height>221</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>461</width>
+    <height>221</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>About nxEncoder Utility</string>
+  </property>
+  <widget class="QSvgWidget" name="svg_widget">
+   <property name="geometry">
+    <rect>
+     <x>-10</x>
+     <y>-5</y>
+     <width>131</width>
+     <height>131</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_close">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>190</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_title">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>10</y>
+     <width>341</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>About nxEncoder Utility</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_version">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>25</y>
+     <width>61</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Version x.x</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_about">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>80</y>
+     <width>341</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>nxEncoder Utility is a companion application to the open-source filament encoder design by Simon Davie. It allows fast and accurate calibration of multiple aspects of a FDM 3D printer extrusion system.</string>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_author">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>40</y>
+     <width>341</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Designed and written by Simon Davie &lt;nexx@nexxdesign.co.uk&gt;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_license">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>55</y>
+     <width>341</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open source, released under the GNU General Public License v3.0</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_github">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>190</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>GitHub.com</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_credits">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>130</y>
+     <width>441</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Many thanks to both RatRig©, and the members of the RatRig© community group, for their advice, ideas, testing and continued support.
+
+Icon created by Good Ware (https://www.flaticon.com/authors/good-ware)
+</string>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_ratrig">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>190</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>RatRig.com</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_ratrig_community">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>190</y>
+     <width>141</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>RatRig Community Group</string>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QSvgWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>PyQt5.QtSvg</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from PyQt5.QtCore import Qt, QState, QStateMachine, QThread, pyqtSignal, QCoreApplication
-from PyQt5.QtGui import QPainter
+from PyQt5.QtCore import QState, QStateMachine, QThread, pyqtSignal, QCoreApplication, QUrl
+from PyQt5.QtGui import QPainter, QIcon, QDesktopServices
 from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QMessageBox
 
 from helpers.printer_klipper import Klipper
 from helpers.printer_reprapfirmware import RepRapFirmware3
@@ -30,10 +30,14 @@ from helpers.serial_encoder import SerialEncoder
 from helpers.worker_consistency import WorkerConsistency
 from helpers.worker_esteps import WorkerEsteps
 from helpers.worker_volumetric import WorkerVolumetric
+from resources.ui_about import Ui_About
 from resources.ui_mainwindow import Ui_MainWindow
 
+from os import path
 import time
 
+__author__ = "Simon Davie <nexx@nexxdesign.co.uk>"
+__version__ = 1.0
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     sig_serial_disable = pyqtSignal()
@@ -49,10 +53,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        self.setWindowIcon(QIcon(path.dirname(__file__) + '/resources/icon.svg'))
         self.current_tool = 0
         self.thread_printer = QThread()
+        self.dlg_about = AboutDialog()
 
         self.actn_save.triggered.connect(self.log_save)
+        self.actn_about.triggered.connect(self.dlg_about.exec_)
         self.btn_encoder_connect.clicked.connect(self.encoder_connect)
         self.btn_encoder_disconnect.clicked.connect(self.encoder_disconnect)
         self.btn_encoder_refresh.clicked.connect(self.populate_serial_ports)
@@ -629,6 +636,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.results_popup(max_volumetric)
         self.gui_settings_enabled(True)
         self.working = False
+
+class AboutDialog(QDialog, Ui_About):
+        def __init__(self):
+            super(AboutDialog, self).__init__()
+            self.setupUi(self)
+            self.setWindowIcon(QIcon(path.dirname(__file__) + '/resources/icon.svg'))
+            self.svg_widget.load(path.dirname(__file__) + '/resources/icon.svg')
+            self.lbl_version.setText('Version {}'.format(__version__))
+            self.lbl_author.setText('Designed and written by {}'.format(__author__))
+
+            url_github = QUrl('https://github.com/nexx/')
+            url_ratrig = QUrl('https://www.ratrig.com/')
+            url_ratrig_community = QUrl('https://www.facebook.com/groups/ratrig3dprintercommunity/')
+
+            self.btn_github.clicked.connect(lambda: QDesktopServices.openUrl(url_github))
+            self.btn_ratrig.clicked.connect(lambda: QDesktopServices.openUrl(url_ratrig))
+            self.btn_ratrig_community.clicked.connect(lambda: QDesktopServices.openUrl(url_ratrig_community))
+            self.btn_close.clicked.connect(self.close)
 
 
 if __name__ == '__main__':
