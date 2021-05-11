@@ -374,7 +374,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.printer is None:
             return
         tool_data = self.printer.cfg_tools[self.current_tool]
-        self.txt_tool_curtemp.setText('{} C'.format(tool_data['cur_temp']))
+        self.txt_tool_curtemp.setText('{:.2f} C'.format(tool_data['cur_temp']))
 
         if hasattr(self.printer, 'isKlipper'):
             self.txt_tool_curstep.setText('{:.6f}'.format(tool_data['rotation_distance']))
@@ -407,11 +407,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def printer_move_home(self):
         ''' Attempt to home the printer '''
+        self.log_event('Homing printer axes')
         self.printer.move_homeaxes()
         self.btn_tool_center.setEnabled(True)
 
     def printer_move_center(self):
         ''' Move current tool to middle of workspace. '''
+        self.log_event('Moving tool {} to the centre of the print area'.format(self.current_tool))
         self.printer.move_tomiddle(self.current_tool)
         self.btn_tool_heat.setEnabled(True)
 
@@ -419,7 +421,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' Set the current tool temperature. '''
         self.btn_tool_heat.setEnabled(False)
         self.btn_tool_run.setEnabled(False)
-        self.log_event('Heating Tool {} to {} C'.format(self.current_tool, self.dsbx_tool_temp.text()))
+        self.log_event('Heating tool {} to {} C'.format(self.current_tool, self.dsbx_tool_temp.text()))
         self.printer.set_tool_temperature(self.dsbx_tool_temp.text(), self.current_tool)
 
     def gui_tool_update(self, index):
@@ -477,7 +479,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in self.tab_esteps.findChildren(QLineEdit):
             i.clear()
 
-        self.txt_esteps_original.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
+        self.txt_esteps_original.setText('{:.2f}'.format(self.printer.cfg_tools[self.current_tool]['stepsPerMm']))
         if hasattr(self.printer, 'isKlipper'):
             self.txt_esteps_klipper_original.setText('{:.6f}'.format(self.printer.cfg_tools[self.current_tool]['rotation_distance']))
         self.thread_esteps = QThread()
