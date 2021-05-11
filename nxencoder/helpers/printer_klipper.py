@@ -82,6 +82,13 @@ class Klipper(QObject):
                     'cur_temp': 0,
                     'max_temp': int(cfg_json[tool]['max_temp'])
                 })
+
+                fw_rotation_distance = (self.cfg_tools[i]['full_steps_per_rotation'] * self.cfg_tools[i]['microsteps']) * self.get_tool_stepdistance(tool)
+                if (round(fw_rotation_distance, 2) != round(self.cfg_tools[i]['rotation_distance'], 2)):
+                    self.sig_log_debug.emit('[KLIPPER] The rotation_distance value returned from Klipper ({}) does not match the value returned from Moonraker ({}).'
+                                            'Using the value from Klipper.'.format(round(fw_rotation_distance, 2), round(self.cfg_tools[i]['rotation_distance'], 2)))
+                    self.cfg_tools[i]['rotation_distance'] = fw_rotation_distance
+                    self.cfg_tools[i]['stepsPerMm'] = round((int(cfg_json[tool]['full_steps_per_rotation']) * int(cfg_json[tool]['microsteps'])) / fw_rotation_distance, 6)
         except Exception as e:
             self.sig_error.emit('Connection to {} failed.'.format(self.host))
             self.sig_log_debug.emit('[KLIPPER] Error: Connection to {} failed. Exception returned: {}'.format(self.host, e))
