@@ -67,7 +67,7 @@ class WorkerConsistency(QObject):
         for self.iteration in range(1, 21):
             self.sig_log_debug.emit('[CONSISTENCY] Running iteration {} of 20'.format(self.iteration))
             self.sig_printer_send_gcode.emit('G1 E20 F120')
-            QTimer.singleShot(10750, self.loop.quit)
+            QTimer.singleShot(12000, self.loop.quit)
             self.loop.exec_()
 
             self.sig_encoder_measure.emit()

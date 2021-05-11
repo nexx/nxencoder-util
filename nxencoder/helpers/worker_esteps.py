@@ -34,8 +34,8 @@ class WorkerEsteps(QObject):
     distance_fine = 50
     feedrate_coarse = 120
     feedrate_fine = 120
-    delay_coarse = ((distance_coarse / (feedrate_coarse / 60)) + 1) * 1000
-    delay_fine = ((distance_fine / (feedrate_fine / 60)) + 1) * 1000
+    delay_coarse = ((distance_coarse / (feedrate_coarse / 60)) + 2) * 1000
+    delay_fine = ((distance_fine / (feedrate_fine / 60)) + 2) * 1000
 
     cal_results = []
 

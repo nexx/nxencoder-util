@@ -78,7 +78,7 @@ class WorkerVolumetric(QObject):
 
             self.sig_log_event.emit('Running flow test at {} mm/min'.format(self.feedrate))
             self.sig_printer_send_gcode.emit('G1 E60 F{}'.format(self.feedrate))
-            delay = ((60 / (self.feedrate / 60)) * 1000) + 1000
+            delay = ((60 / (self.feedrate / 60)) + 2) * 1000
             QTimer.singleShot(delay, self.loop.quit)
             self.loop.exec_()
 
