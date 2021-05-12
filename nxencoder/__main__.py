@@ -25,6 +25,7 @@ from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QLineEdit, QMainWindow, QMessageBox
 
 from helpers.printer_klipper import Klipper
+from helpers.printer_marlin import Marlin
 from helpers.printer_reprapfirmware import RepRapFirmware3
 from helpers.serial_encoder import SerialEncoder
 from helpers.worker_consistency import WorkerConsistency
@@ -131,6 +132,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_disconnected.assignProperty(self.txt_printer_hostname, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_connect, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.cbx_printer_fwtype, 'enabled', True)
+        self.state_printer_disconnected.assignProperty(self.cbx_printer_port, 'enabled', True)
         self.state_printer_disconnected.assignProperty(self.btn_printer_disconnect, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.tabMain, 'enabled', False)
         self.state_printer_disconnected.assignProperty(self.cbx_tool, 'enabled', False)
@@ -142,6 +144,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connecting.assignProperty(self.txt_printer_hostname, 'enabled', False)
         self.state_printer_connecting.assignProperty(self.btn_printer_connect, 'enabled', False)
         self.state_printer_connecting.assignProperty(self.cbx_printer_fwtype, 'enabled', False)
+        self.state_printer_connecting.assignProperty(self.cbx_printer_port, 'enabled', False)
         self.state_printer_connecting.assignProperty(self.btn_printer_disconnect, 'enabled', False)
 
         self.state_printer_connected = QState(self.state_printer)
@@ -150,6 +153,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state_printer_connected.assignProperty(self.txt_printer_hostname, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_connect, 'enabled', False)
         self.state_printer_connected.assignProperty(self.cbx_printer_fwtype, 'enabled', False)
+        self.state_printer_connected.assignProperty(self.cbx_printer_port, 'enabled', False)
         self.state_printer_connected.assignProperty(self.btn_printer_disconnect, 'enabled', True)
         self.state_printer_connected.assignProperty(self.tabMain, 'enabled', True)
         self.state_printer_connected.assignProperty(self.cbx_tool, 'enabled', True)
@@ -295,12 +299,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lbl_tool_esteps_static.setText('Rotation Distance')
             return
 
-        # if index in [3, 5]:
-        #     self.txt_printer_hostname.setHidden(True)
-        #     self.cbx_printer_port.setHidden(False)
-        #     self.lbl_printer_hostname_static.setText('Port')
-        #     self.populate_printer_ports()
-        #     return
+        if index == 3:
+            self.txt_printer_hostname.setHidden(True)
+            self.cbx_printer_port.setHidden(False)
+            self.lbl_printer_hostname_static.setText('Port')
+            self.populate_printer_ports()
+            return
+
         self.txt_printer_hostname.setHidden(False)
         self.cbx_printer_port.setHidden(True)
         self.lbl_printer_hostname_static.setText('Host or IP')
@@ -343,6 +348,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.log_event('Attempting connection to Klipper via Moonraker at {}'.format(self.txt_printer_hostname.text()))
             self.printer = Klipper(self.txt_printer_hostname.text())
             self.printer_start_thread()
+        if self.cbx_printer_fwtype.currentIndex() == 3:
+            self.log_event('Attempting connection to Marlin via serial port {}'.format(self.serial_ports[self.cbx_printer_port.currentIndex()].portName()))
+            self.printer = Marlin(self.serial_ports[self.cbx_printer_port.currentIndex()].portName())
 
         self.printer.sig_log_event.connect(self.log_event)
         self.printer.sig_log_debug.connect(self.log_debug)
