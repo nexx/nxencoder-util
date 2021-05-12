@@ -335,10 +335,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def printer_connect(self):
         ''' Connect to the specified firmware '''
-        self.log_event('Attempting connection to {} at {}'.format(self.cbx_printer_fwtype.currentText(), self.txt_printer_hostname.text()))
         if self.cbx_printer_fwtype.currentIndex() == 0:
+            self.log_event('Attempting connection to RepRapFirmware3 at {}'.format(self.txt_printer_hostname.text()))
             self.printer = RepRapFirmware3(self.txt_printer_hostname.text())
         if self.cbx_printer_fwtype.currentIndex() == 2:
+            self.log_event('Attempting connection to Klipper via Moonraker at {}'.format(self.txt_printer_hostname.text()))
             self.printer = Klipper(self.txt_printer_hostname.text())
 
         self.printer.moveToThread(self.thread_printer)
