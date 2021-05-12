@@ -338,22 +338,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.cbx_printer_fwtype.currentIndex() == 0:
             self.log_event('Attempting connection to RepRapFirmware3 at {}'.format(self.txt_printer_hostname.text()))
             self.printer = RepRapFirmware3(self.txt_printer_hostname.text())
+            self.printer_start_thread()
         if self.cbx_printer_fwtype.currentIndex() == 2:
             self.log_event('Attempting connection to Klipper via Moonraker at {}'.format(self.txt_printer_hostname.text()))
             self.printer = Klipper(self.txt_printer_hostname.text())
+            self.printer_start_thread()
 
-        self.printer.moveToThread(self.thread_printer)
-        self.thread_printer.started.connect(self.printer.run)
         self.printer.sig_log_event.connect(self.log_event)
         self.printer.sig_log_debug.connect(self.log_debug)
-        self.printer.sig_finished.connect(self.thread_printer.quit)
         self.printer.sig_connected.connect(self.printer_connected)
         self.printer.sig_error.connect(self.error_critical)
         self.printer.sig_force_close.connect(self.printer_force_close)
         self.printer.sig_data_update.connect(self.printer_update)
         self.printer.sig_temp_reached.connect(self.printer_temp_reached)
-        self.thread_printer.start()
         self.sig_printer_connect.emit()
+
+    def printer_start_thread(self):
+        ''' Move the printer QObject to a new thread and start it. '''
+        self.printer.moveToThread(self.thread_printer)
+        self.thread_printer.started.connect(self.printer.run)
+        self.printer.sig_finished.connect(self.thread_printer.quit)
+        self.thread_printer.start()
 
     def printer_connected(self):
         ''' The printer connection established sucessfully. '''
