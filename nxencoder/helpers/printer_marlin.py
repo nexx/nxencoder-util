@@ -161,3 +161,4 @@ class Marlin(QObject):
         the new value as well. '''
         self.cfg_tools[tool]['stepsPerMm'] = float(esteps)
         self.send_gcode('M92 T{} E{}'.format(tool, esteps))
+        self.send_gcode('M500')
