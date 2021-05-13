@@ -103,6 +103,10 @@ class WorkerVolumetric(QObject):
             self.barset.append(under_extrusion)
             return
 
+        if self.feedrate == max_feedrate:
+            self.barset.replace(self.barset.count() - 1, under_extrusion)
+            return
+
         if self.feedrate < max_feedrate:
             self.xaxis.insert(self.xaxis.count() - 1, str(self.feedrate))
             self.barset.insert(self.barset.count() - 1, under_extrusion)
