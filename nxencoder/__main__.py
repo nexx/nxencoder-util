@@ -191,7 +191,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cbox_tool_filament.setEnabled(is_enabled)
         self.dsbx_tool_temp.setEnabled(is_enabled)
         self.btn_tool_home.setEnabled(is_enabled)
-        self.btn_tool_center.setEnabled(is_enabled)
+        self.btn_tool_move.setEnabled(is_enabled)
         self.btn_tool_heat.setEnabled(is_enabled)
         self.btn_tool_run.setEnabled(is_enabled)
 
@@ -403,7 +403,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.txt_tool_curstep.setText('{:.2f}'.format(tool_data['stepsPerMm']))
 
         if self.printer.homed and not self.working:
-            self.btn_tool_center.setEnabled(True)
+            self.btn_tool_move.setEnabled(True)
 
     def printer_disconnect(self):
         ''' Disconnect from the printer '''
@@ -430,7 +430,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ''' Attempt to home the printer '''
         self.log_event('Homing printer axes')
         self.printer.move_homeaxes()
-        self.btn_tool_center.setEnabled(True)
+        self.btn_tool_move.setEnabled(True)
 
     def printer_move_safe(self):
         ''' Move current tool to a safe location on the workspace. '''
