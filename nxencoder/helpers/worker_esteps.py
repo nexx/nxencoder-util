@@ -25,8 +25,9 @@ from PyQt5.QtCore import pyqtSignal, QEventLoop, QObject, QTimer
 
 class WorkerEsteps(QObject):
     sig_encoder_measure = pyqtSignal()
+    sig_encoder_reset = pyqtSignal()
     sig_printer_send_gcode = pyqtSignal(str)
-    sig_log_debug = pyqtSignal(str)
+    sig_log_event = pyqtSignal(str)
     sig_result_ready = pyqtSignal()
     sig_finished = pyqtSignal()
 
@@ -48,15 +49,21 @@ class WorkerEsteps(QObject):
         ''' Main thread used for running the eSteps calibration
         iterations. '''
         self.loop = QEventLoop()
+
+        self.sig_log_event.emit('Priming the nozzle')
+        self.sig_printer_send_gcode.emit('G1 E5 F600')
+        QTimer.singleShot(2000, self.loop.quit)
+        self.loop.exec_()
+        self.sig_encoder_reset.emit()
+
         self.cal_results.clear()
         for self.iteration in range(0, 20):
+            self.sig_log_event.emit('Running calibration iteration {} of 20'.format(self.iteration + 1))
             if self.iteration <= 9:
-                self.sig_log_debug.emit('[ESTEPS] Running iteration {} (coarse)'.format(self.iteration + 1))
                 self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_coarse, self.feedrate_coarse))
                 QTimer.singleShot(self.delay_coarse, self.loop.quit)
 
             if self.iteration >= 10:
-                self.sig_log_debug.emit('[ESTEPS] Running iteration {} (fine)'.format(self.iteration + 1))
                 self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance_fine, self.feedrate_fine))
                 QTimer.singleShot(self.delay_fine, self.loop.quit)
 
