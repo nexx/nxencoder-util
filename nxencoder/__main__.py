@@ -67,7 +67,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_printer_connect.clicked.connect(self.printer_connect)
         self.btn_printer_disconnect.clicked.connect(self.printer_disconnect)
         self.btn_tool_home.clicked.connect(self.printer_move_home)
-        self.btn_tool_center.clicked.connect(self.printer_move_center)
+        self.btn_tool_move.clicked.connect(self.printer_move_safe)
         self.btn_tool_heat.clicked.connect(self.printer_set_temperature)
         self.btn_tool_run.clicked.connect(self.printer_run)
         self.btn_estop.clicked.connect(self.printer_estop)
@@ -432,10 +432,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.printer.move_homeaxes()
         self.btn_tool_center.setEnabled(True)
 
-    def printer_move_center(self):
-        ''' Move current tool to middle of workspace. '''
-        self.log_event('Moving tool {} to the centre of the print area'.format(self.current_tool))
-        self.printer.move_tomiddle(self.current_tool)
+    def printer_move_safe(self):
+        ''' Move current tool to a safe location on the workspace. '''
+        self.log_event('Moving tool {} to a safe location within the print area'.format(self.current_tool))
+        self.printer.move_to_safe(self.current_tool)
         self.btn_tool_heat.setEnabled(True)
 
     def printer_set_temperature(self):

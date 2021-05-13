@@ -124,7 +124,7 @@ class RepRapFirmware3(QObject):
         ''' Home all axes on the printer. '''
         self.send_gcode('G28')
 
-    def move_tomiddle(self, tool=0):
+    def move_to_safe(self, tool=0):
         ''' Move the selected tool to the center of the bed. '''
         axes = self.get_objectmodel('move.axes')
         x_mid = (axes[0]['min'] + axes[0]['max']) / 2

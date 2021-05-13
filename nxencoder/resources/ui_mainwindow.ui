@@ -1900,7 +1900,7 @@
       <string>Home all axes</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="btn_tool_center">
+    <widget class="QPushButton" name="btn_tool_move">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -1919,7 +1919,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Move tool to center</string>
+      <string>Move tool to safe area</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btn_tool_heat">

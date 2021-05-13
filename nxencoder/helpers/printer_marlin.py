@@ -124,8 +124,10 @@ class Marlin(QObject):
         return
         # self.send_gcode('G28')
 
-    def move_tomiddle(self, tool=0):
-        ''' Move the selected tool to the center of the bed. '''
+    def move_to_safe(self, tool=0):
+        ''' Move the selected tool a safe location. Marlin does not
+        allow the retreval of the work area at runtime, so just move Z
+        up from the home position. '''
         return
         # axes = self.get_objectmodel('move.axes')
         # x_mid = (axes[0]['min'] + axes[0]['max']) / 2

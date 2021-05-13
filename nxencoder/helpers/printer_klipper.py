@@ -140,7 +140,7 @@ class Klipper(QObject):
         ''' Home all axes on the printer. '''
         self.send_gcode('G28')
 
-    def move_tomiddle(self, tool=0):
+    def move_to_safe(self, tool=0):
         ''' Move the selected tool to the center of the bed. '''
         self.send_gcode('T{}'.format(tool))
         cfg_json = self.get_objectmodel('toolhead')
