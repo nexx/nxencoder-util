@@ -36,6 +36,7 @@ class WorkerVolumetric(QObject):
     feedrate = 120
     feedrate_limit = 0
     feedrate_step = 60
+    distance = 100
 
     running = True
     fine = False
@@ -77,8 +78,8 @@ class WorkerVolumetric(QObject):
             self.sig_encoder_reset.emit()
 
             self.sig_log_event.emit('Running flow test at {} mm/min'.format(self.feedrate))
-            self.sig_printer_send_gcode.emit('G1 E60 F{}'.format(self.feedrate))
-            delay = ((60 / (self.feedrate / 60)) + 2) * 1000
+            self.sig_printer_send_gcode.emit('G1 E{} F{}'.format(self.distance, self.feedrate))
+            delay = ((self.distance / (self.feedrate / 60)) + 2) * 1000
             QTimer.singleShot(delay, self.loop.quit)
             self.loop.exec_()
 
@@ -120,13 +121,13 @@ class WorkerVolumetric(QObject):
     def handle_measurement(self, measurement):
         ''' Retrieve the measurements from the encoder signal, run calculations,
         adjust as needed, then add them to the chart. '''
-        self.under_extrusion = (100 - ((measurement / 60) * 100))
+        self.under_extrusion = (100 - ((measurement / self.distance) * 100))
         if self.under_extrusion < 0.25:
             self.under_extrusion = 0.0
         self.sig_log_event.emit('The result for {} mm/min is {:.2f}% of under-extrusion'.format(self.feedrate, self.under_extrusion))
         self.add(self.under_extrusion)
 
-        if self.under_extrusion >= 4 and not self.fine:
+        if self.under_extrusion >= 3 and not self.fine:
             ''' We've exceeded the final under_extrusion limit without starting
             fine tuning. Back off to the last data point and start the fine
             tuning process from there. '''
@@ -139,7 +140,7 @@ class WorkerVolumetric(QObject):
             self.sig_log_event.emit('We are approaching the flow limit of this tool. Now proceeding with fine tuning beginning at {} mm/min'.format(self.feedrate))
             return
 
-        if self.under_extrusion >= 4 and self.fine:
+        if self.under_extrusion >= 3 and self.fine:
             self.feedrate -= self.feedrate_step
             self.feedrate -= 5
             self.running = False
