@@ -153,3 +153,10 @@ class Marlin(QObject):
             loop.exec_()
         self.serial_log = False
         self.serial_buffer.pop()
+
+    def set_tool_esteps(self, esteps, tool=0):
+        ''' Change the esteps of the extruder configured to the
+        specified tool. Internally update our configuration with
+        the new value as well. '''
+        self.cfg_tools[tool]['stepsPerMm'] = float(esteps)
+        self.send_gcode('M92 T{} E{}'.format(tool, esteps))
