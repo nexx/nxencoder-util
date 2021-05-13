@@ -121,20 +121,15 @@ class Marlin(QObject):
 
     def move_homeaxes(self):
         ''' Home all axes on the printer. '''
-        return
-        # self.send_gcode('G28')
+        self.send_gcode('G28')
 
     def move_to_safe(self, tool=0):
         ''' Move the selected tool a safe location. Marlin does not
         allow the retreval of the work area at runtime, so just move Z
         up from the home position. '''
-        return
-        # axes = self.get_objectmodel('move.axes')
-        # x_mid = (axes[0]['min'] + axes[0]['max']) / 2
-        # y_mid = (axes[1]['min'] + axes[1]['max']) / 2
-        # self.send_gcode('T{}'.format(tool))
-        # self.send_gcode('G1 X{} Y{} F6000'.format(x_mid, y_mid))
-        # self.send_gcode('G1 Z50 F1200')
+        self.send_gcode('T{}'.format(tool))
+        self.send_gcode('G28')
+        self.send_gcode('G1 Z50 F1200')
 
     def set_tool_temperature(self, temp, tool=0):
         ''' Begins heating the specified tool on the printer. '''
