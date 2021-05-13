@@ -116,7 +116,8 @@ class Marlin(QObject):
 
                 self.connected = True
                 self.sig_connected.emit()
-
+                self.sig_log_event.emit('Switching to relative extrusion mode.')
+                self.send_gcode('M83')
                 self.send_gcode('M155 S2')
 
     def move_homeaxes(self):
