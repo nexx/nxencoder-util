@@ -584,7 +584,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.worker_consistency.sig_encoder_measure.connect(self.encoder.measure)
         self.worker_consistency.sig_encoder_reset.connect(self.encoder.reset)
         self.worker_consistency.sig_printer_send_gcode.connect(self.printer.send_gcode)
-        self.worker_consistency.sig_log_debug.connect(self.log_debug)
+        self.worker_consistency.sig_log_event.connect(self.log_event)
         self.worker_consistency.sig_finished.connect(self.const_finished)
         self.worker_consistency.sig_finished.connect(self.worker_consistency.deleteLater)
         self.worker_consistency.sig_finished.connect(self.thread_consistency.deleteLater)

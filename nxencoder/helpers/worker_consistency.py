@@ -28,7 +28,7 @@ class WorkerConsistency(QObject):
     sig_encoder_measure = pyqtSignal()
     sig_encoder_reset = pyqtSignal()
     sig_printer_send_gcode = pyqtSignal(str)
-    sig_log_debug = pyqtSignal(str)
+    sig_log_event = pyqtSignal(str)
     sig_finished = pyqtSignal()
 
     cal_results = []
@@ -58,14 +58,14 @@ class WorkerConsistency(QObject):
         self.loop = QEventLoop()
         self.series.clear()
 
-        self.sig_log_debug.emit('[CONSISTENCY] Purging Nozzle')
+        self.sig_log_event.emit('Priming the nozzle')
         self.sig_printer_send_gcode.emit('G1 E5 F600')
         QTimer.singleShot(2000, self.loop.quit)
         self.loop.exec_()
         self.sig_encoder_reset.emit()
 
         for self.iteration in range(1, 21):
-            self.sig_log_debug.emit('[CONSISTENCY] Running iteration {} of 20'.format(self.iteration))
+            self.sig_log_event.emit('Running iteration {} of 20'.format(self.iteration))
             self.sig_printer_send_gcode.emit('G1 E20 F120')
             QTimer.singleShot(12000, self.loop.quit)
             self.loop.exec_()
