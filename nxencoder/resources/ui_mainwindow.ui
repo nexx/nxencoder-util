@@ -366,22 +366,22 @@
         </property>
         <item>
          <property name="text">
-          <string>RepRapFirmware v3 - Standalone mode</string>
+          <string>RepRapFirmware v3 (Standalone)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>RepRapFirmware v3 - via SBC</string>
+          <string>RepRapFirmware v3 (SBC)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Klipper - via Moonraker</string>
+          <string>Klipper (Moonraker)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Marlin - via Serial</string>
+          <string>Marlin (Serial Connection)</string>
          </property>
         </item>
        </widget>
