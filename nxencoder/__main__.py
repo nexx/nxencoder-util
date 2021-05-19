@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QLineEdit, QMain
 from helpers.printer_klipper import Klipper
 from helpers.printer_marlin import Marlin
 from helpers.printer_reprapfirmware import RepRapFirmware3
+from helpers.printer_reprapfirmware_sbc import RepRapFirmware3_SBC
 from helpers.serial_encoder import SerialEncoder
 from helpers.worker_consistency import WorkerConsistency
 from helpers.worker_esteps import WorkerEsteps
@@ -343,6 +344,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.cbx_printer_fwtype.currentIndex() == 0:
             self.log_event('Attempting connection to RepRapFirmware3 at {}'.format(self.txt_printer_hostname.text()))
             self.printer = RepRapFirmware3(self.txt_printer_hostname.text())
+            self.printer_start_thread()
+        if self.cbx_printer_fwtype.currentIndex() == 1:
+            self.log_event('Attempting connection to RepRapFirmware3 via the SBC {}'.format(self.txt_printer_hostname.text()))
+            self.printer = RepRapFirmware3_SBC(self.txt_printer_hostname.text())
             self.printer_start_thread()
         if self.cbx_printer_fwtype.currentIndex() == 2:
             self.log_event('Attempting connection to Klipper via Moonraker at {}'.format(self.txt_printer_hostname.text()))
