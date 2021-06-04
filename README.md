@@ -33,19 +33,10 @@ _It is recommended to print these parts in either PETG or ABS, on a well calibra
 - 4x M3 nylon-insert lock nut
 
 ### Assembly
-1. Place one 695 bearing on a flat surface and insert the M5x30 dowel through the center until it stops
-2. Install the MK8 extruder gear onto the M5x30 dowel so that the hobbed end is furthest from the bearing
-3. Make sure the MK8 extruder gear is sat atop the bearing and then secure it in place with the grub screws
-4. Insert the bearing, dowel, and extruder gear assembly into the encoder body base
-5. Install a second 695 bearing onto the M5x30 dowel pin. Slide it right down so that it rests atop the MK8 extruder gear
-6. Install the final 695 bearing into the idler housing and insert the idler pin to secure it in place
-7. Insert the idler assembly into the encoder body
-8. Install the spring between the rear of the idler assembly and the rear of the housing
-9. Install the encoder body top
-10. Follow the instructions provided with the the AMT102V encoder to install it atop the completed encoder housing
+See [docs/assembly_instructions.pdf](https://github.com/nexx/nxEncoder-Util/blob/main/docs/assembly_instructions.pdf)
 
-### Firmware installation
-_To be completed._
+### Firmware installation & provisioning
+See [docs/provisioning_instructions.pdf](https://github.com/nexx/nxEncoder-Util/blob/main/docs/provisioning_instructions.pdf)
 
 ## Software installation
 _To be completed._
