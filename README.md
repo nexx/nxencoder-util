@@ -42,10 +42,10 @@ _It is recommended to print these parts in either PETG or ABS, on a well calibra
 - Molex crimp connectors (16-02-0086)
 
 ### Assembly
-See [docs/assembly_instructions.pdf](https://github.com/nexx/nxEncoder-Util/blob/main/docs/assembly_instructions.pdf)
+See [docs/assembly_instructions.pdf](https://github.com/nexx/nxencoder-util/blob/main/docs/assembly_instructions.pdf)
 
 ### Firmware installation & provisioning
-See [docs/provisioning_instructions.pdf](https://github.com/nexx/nxEncoder-Util/blob/main/docs/provisioning_instructions.pdf)
+See [docs/provisioning_instructions.pdf](https://github.com/nexx/nxencoder-util/blob/main/docs/provisioning_instructions.pdf)
 
 ## Software installation
 _To be completed._
