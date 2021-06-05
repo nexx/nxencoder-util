@@ -64,3 +64,6 @@ Instructions are currently unavailable as the software has not been tested on ma
 
 ## Usage
 _To be completed._
+
+## License
+nxencoder-util is free software and is published under the GNU General Public License v3.0. For full details, please see the [included license](https://github.com/nexx/nxencoder-util/blob/main/COPYING)
