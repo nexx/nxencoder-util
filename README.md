@@ -48,7 +48,19 @@ See [docs/assembly_instructions.pdf](https://github.com/nexx/nxencoder-util/blob
 See [docs/provisioning_instructions.pdf](https://github.com/nexx/nxencoder-util/blob/main/docs/provisioning_instructions.pdf)
 
 ## Software installation
-_To be completed._
+### Microsoft Windows
+Pre-compiled and self-contained binaries are currently available for 64bit Windows platforms. These can be found under [releases](https://github.com/nexx/nxencoder-util/releases).
+
+### Linux
+Use the following commands to clone the source code, install the required Python libraries, and then run the application.
+```console
+foo@bar:~$ git clone https://github.com/nexx/nxencoder-util.git
+foo@bar:~$ cd nxencoder-util/nxencoder
+foo@bar:~$ pip install -r requirements.txt
+foo@bar:~$ python3 ./__main__.pyw
+```
+### macOS
+Instructions are currently unavailable as the software has not been tested on macOS.
 
 ## Usage
 _To be completed._
