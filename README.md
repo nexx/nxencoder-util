@@ -31,6 +31,15 @@ _It is recommended to print these parts in either PETG or ABS, on a well calibra
 - 1x M5x30 dowel
 - 4x M3x16 countersunk machine screw (DIN EN ISO 10462)
 - 4x M3 nylon-insert lock nut
+- 1x compression spring (7mm diameter, 10-12mm long, capable of compressing to ~6mm)
+
+#### The following pre-crimped options are available with regards to wiring:
+- Pre-crimped 1FT cable (CUI-3131-1FT)
+- Pre-crimped 6FT cable (CUI-3131-6FT)
+
+#### Alternately you can purchase the crimps and housings to make your own:
+- Molex 5P housing (50-57-9405)
+- Molex crimp connectors (16-02-0086)
 
 ### Assembly
 See [docs/assembly_instructions.pdf](https://github.com/nexx/nxEncoder-Util/blob/main/docs/assembly_instructions.pdf)
