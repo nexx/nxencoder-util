@@ -27,11 +27,11 @@ _It is recommended to print these parts in either PETG or ABS, on a well calibra
 - 1x AMT102V rotary encoder (AMT102-D2048-I5000-S)
 - 1x Arduino Nano (or compatible clone)
 - 3x 695 bearing (695-2RS or 695-ZZ)
-- 1x MK8 hobbed extruder gear with a 5mm bore
+- 1x E3D Hobb Goblin 5mm ID Drive Gear
 - 1x M5x30 dowel
-- 4x M3x16 countersunk machine screw (DIN EN ISO 10462)
+- 4x M3x20 countersunk flat head screw (DIN EN ISO 7046)
 - 4x M3 nylon-insert lock nut
-- 1x compression spring (7mm diameter, 10-12mm long, capable of compressing to ~6mm)
+- 1x compression spring (5mm OD, 0.5mm wire size, ~10mm long, capable of compressing to ~6mm)
 
 #### The following pre-crimped options are available with regards to wiring:
 - Pre-crimped 1FT cable (CUI-3131-1FT)
