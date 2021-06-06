@@ -26,8 +26,8 @@ const float compile_version = 1.0;
 
 // Diameter of the gear or wheel attached to the encoder, this can be
 // tweaked as necessary to achieve accurate results.
-// MK8 Extruder gear    = ~11.00
-float gearDiameter = 10.9885;
+// E3D Hobb Goblin 5mm ID gear = ~7.30
+float gearDiameter = 7.30;
 
 // Number of pulses produces by the encoder for one full rotation.
 // This is normally mentioed in the spec sheet.
