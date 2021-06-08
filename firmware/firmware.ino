@@ -22,17 +22,17 @@ Encoder filamentEncoder(2, 3);
 
 // Constant vars
 const char compile_date[] = __DATE__ " " __TIME__;
-const float compile_version = 1.0;
+const float compile_version = 1.1;
 
 // Diameter of the gear or wheel attached to the encoder, this can be
-// tweaked as necessary to achieve accurate results.
-// E3D Hobb Goblin 5mm ID gear = ~7.30
-float gearDiameter = 7.30;
+// tweaked as necessary to achieve accurate results. The official diameter
+// of the E3D Hobb Goblin is 7.3mm effective, but as we are not pushing the
+// filament hard against the drive gear, our result is slightly larger.
+float gearDiameter = 8.00;
 
 // Number of pulses produces by the encoder for one full rotation.
-// This is normally mentioed in the spec sheet.
-// LPD3806-600BM-G5-24C = 2400
-// AMT102-V (2048 PPR)  = 8192
+// The AMT102-D2048-I5000-S in 2048 mode pulses 8192 times per
+// rotation. (2048 x 4)
 const unsigned int encoderRotationCount = 8192;
 
 // Used to store the calculated encoder per MM value.
